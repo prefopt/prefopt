@@ -145,7 +145,7 @@ class TestExpectedImprovementHelperFunctions(unittest.TestCase):
 
 class TestExpectedImprovementFunction(unittest.TestCase):
 
-    def test_expected_improvement(self):
+    def test_expected_improvement_1d(self):
         # zero stddev
         ei = expected_improvement(0, 0, 0)
         self.assertAlmostEqual(0, ei)
@@ -173,6 +173,35 @@ class TestExpectedImprovementFunction(unittest.TestCase):
         # negative stddev
         with self.assertRaises(ValueError):
             expected_improvement(0, -1, 0)
+
+    def test_expected_improvement_2d(self):
+        # zero stddev
+        ei = expected_improvement([0] * 2, [0] * 2, 0)
+        self.assertTrue(np.allclose([0] * 2, ei))
+
+        # small stddev
+        ei = expected_improvement([0] * 2, [1e-10] * 2, 0)
+        self.assertTrue(np.allclose([0] * 2, ei))
+
+        # large stddev
+        ei = expected_improvement([0] * 2, [10] * 2, 0)
+        self.assertTrue(np.allclose([3.9894228040143269] * 2, ei))
+
+        # mean equal to previous best
+        ei = expected_improvement([0] * 2, [1] * 2, 0)
+        self.assertTrue(np.allclose([0.3989422804014327] * 2, ei))
+
+        # mean greater than previous best
+        ei = expected_improvement([1] * 2, [1] * 2, 0)
+        self.assertTrue(np.allclose([1.0833154705876864] * 2, ei))
+
+        # mean smaller than previous best
+        ei = expected_improvement([0] * 2, [1] * 2, 1)
+        self.assertTrue(np.allclose([0.083315470587686291] * 2, ei))
+
+        # negative stddev
+        with self.assertRaises(ValueError):
+            expected_improvement([0] * 2, [-1] * 2, 0)
 
 
 if __name__ == '__main__':

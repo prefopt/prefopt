@@ -28,30 +28,31 @@ def preprocess_data(data):
 
 def expected_improvement(mu, std, best_f):
     """
-    Compute the expected improvement at given point.
+    Compute the expected improvement at given point(s).
 
     Parameters
     ----------
-    mu : float
-        Mean of Gaussian process at given point.
-    std : float
-        Standard deviation of Gaussian process at given point.
+    mu : float or np.array
+        Mean of Gaussian process at given point(s).
+    std : float or np.array
+        Standard deviation of Gaussian process at given point(s).
     best_f : float
         Current maximum.
 
     Returns
     -------
-    ei : float
-        Expected improvement at given point.
+    ei : float or np.array
+        Expected improvement at given point(s).
     """
-    if std < 0:
+    mu = np.array(mu)
+    std = np.array(std)
+    if (std < 0).any():
         raise ValueError("stddev cannot be negative: {}".format(std))
-    elif std == 0:
-        return 0.0
-    else:
-        d = (mu - best_f) / std
-        z = norm()
-        return (mu - best_f) * z.cdf(d) + std * z.pdf(d)
+
+    mask = std > 0
+    d = np.where(mask, (mu - best_f) / std, 0.0)
+    z = norm()
+    return np.where(mask, (mu - best_f) * z.cdf(d) + std * z.pdf(d), 0.0)
 
 
 class ExpectedImprovementAcquirer(Acquirer):
