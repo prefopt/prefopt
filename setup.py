@@ -67,7 +67,6 @@ setup(
         'edward>=1.3.3',
         'evalset>=1.2.1',
         'flake8>=3.4.1',
-        'numpy>=1.12.1',
         'scipydirect>=1.3',
     ],
 
