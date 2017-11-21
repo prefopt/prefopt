@@ -68,6 +68,10 @@ class AcquirerMeta(object):
     def best(self):
         """Current best point."""
 
+    @abstractproperty
+    def valuations(self):
+        """Current valuations."""
+
     @abstractmethod
     def update(self, r, c, preference):
         """Update acquirer with new preference."""

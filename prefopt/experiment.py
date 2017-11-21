@@ -61,6 +61,17 @@ class OutputPresenter(object):
             The user preference for the choice `xn` vs. `xb`.
         """
 
+    @abc.abstractmethod
+    def present_valuations(self, valuations):
+        """
+        Present the current valuations of the model.
+
+        Parameters
+        ----------
+        valuations : iterable
+            Iterable of (item, valuation) tuples.
+        """
+
 
 class PreferenceExperiment(object):
     """
@@ -107,3 +118,8 @@ class PreferenceExperiment(object):
         # present output
         self.output_presenter.present(self.iteration, xn, xb, choice)
         self.iteration += 1
+
+    def monitor(self):
+        """Monitor the current valuations of the model."""
+        valuations = self.acquirer.valuations
+        self.output_presenter.present_valuations(valuations)

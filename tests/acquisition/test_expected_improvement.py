@@ -25,7 +25,7 @@ from prefopt.optimization import DirectOptimizer
 
 class TestExpectedImprovementAcquirer(tf.test.TestCase):
 
-    def test_next_best_update(self):
+    def test_public_interface(self):
         with self.test_session():
             # set RNG seed
             np.random.seed(0)
@@ -57,6 +57,10 @@ class TestExpectedImprovementAcquirer(tf.test.TestCase):
             with self.assertRaises(ValueError):
                 acquirer.best
 
+            # test that `next` needs to be called before `valuations`
+            with self.assertRaises(ValueError):
+                acquirer.valuations
+
             # test `next`
             a1, a2 = a
             b1, b2 = b
@@ -71,6 +75,13 @@ class TestExpectedImprovementAcquirer(tf.test.TestCase):
             best = acquirer.best
             self.assertTrue(np.allclose(a, best))
             self.assertTrue(np.allclose(best, acquirer.best))
+
+            # test `valuations`
+            valuations = acquirer.valuations
+            x, f = zip(*valuations)
+            self.assertEqual(len(x), len(data.preferences()))
+            self.assertTrue(all(a < b for a, b in zip(x, x[1:])))
+            self.assertTrue(all(a > b for a, b in zip(f, f[1:])))
 
             # test `update`
             e = (-1, -1)
@@ -87,6 +98,13 @@ class TestExpectedImprovementAcquirer(tf.test.TestCase):
             # test `best`
             best = acquirer.best
             self.assertTrue(np.allclose(e, best))
+
+            # test `valuations`
+            valuations = acquirer.valuations
+            x, f = zip(*valuations)
+            self.assertEqual(len(x), len(data.preferences()))
+            self.assertTrue(all(a < b for a, b in zip(x, x[1:])))
+            self.assertTrue(all(a > b for a, b in zip(f, f[1:])))
 
 
 class TestExpectedImprovementHelperFunctions(unittest.TestCase):

@@ -73,6 +73,7 @@ class ExpectedImprovementAcquirer(Acquirer):
 
         self._next = None
         self._best = None
+        self._valuations = None
 
     @property
     def next(self):
@@ -85,6 +86,7 @@ class ExpectedImprovementAcquirer(Acquirer):
 
             # determine current best
             f = self.model.mean(X)
+            self._valuations = [(tuple(x), fx) for x, fx in zip(X, f)]
             best_ix = np.argmax(f)
             best_f = f[best_ix]
             self._best = tuple(X[best_ix])
@@ -105,6 +107,13 @@ class ExpectedImprovementAcquirer(Acquirer):
             msg = "call `next` before `best`"
             raise ValueError(msg)
         return self._best
+
+    @property
+    def valuations(self):
+        if self._valuations is None:
+            msg = "call `next` before `valuations`"
+            raise ValueError(msg)
+        return self._valuations
 
     def update(self, r, c, preference):
         # reset `next`

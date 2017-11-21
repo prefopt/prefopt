@@ -44,6 +44,7 @@ class MockAcquirer(Acquirer):
 
         self._best = (0, 0)
         self._next = (2, 2)
+        self._valuations = [((0, 0), 1), ((2, 2), 0)]
 
     @property
     def next(self):
@@ -52,6 +53,10 @@ class MockAcquirer(Acquirer):
     @property
     def best(self):
         return self._best
+
+    @property
+    def valuations(self):
+        return self._valuations
 
     def update(self, r, c, preference):
         self._next = (2, 2)
@@ -67,8 +72,14 @@ class MockInputPresenter(InputPresenter):
 
 class MockOutputPresenter(OutputPresenter):
 
+    def __init__(self):
+        self.valuations = None
+
     def present(self, i, xn, xb, choice):
         pass
+
+    def present_valuations(self, valuations):
+        self.valuations = valuations
 
 
 class TestPreferenceExperiment(unittest.TestCase):
@@ -104,6 +115,25 @@ class TestPreferenceExperiment(unittest.TestCase):
         self.assertEqual(
             acquirer.data[(0, 0), (2, 2)],
             1
+        )
+
+    def test_mock_monitor(self):
+        acquirer = MockAcquirer()
+        presenter = MockInputPresenter()
+        output = MockOutputPresenter()
+        ex = PreferenceExperiment(
+            acquirer,
+            presenter,
+            output
+        )
+
+        # monitor
+        ex.monitor()
+
+        # check valuation update
+        self.assertEqual(
+            output.valuations,
+            acquirer._valuations
         )
 
     def test_run(self):
