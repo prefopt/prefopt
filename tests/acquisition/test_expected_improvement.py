@@ -77,11 +77,11 @@ class TestExpectedImprovementAcquirer(tf.test.TestCase):
             acquirer.update(e, a, 1)
 
             # test `next`
-            e1, e2 = e
+            l1, l2 = (x[0] for x in bounds)
             xn1, xn2 = acquirer.next
             self.assertTrue(
-                (e1 < xn1 < a1) and
-                (e2 < xn2 < a2)
+                (l1 < xn1 < a1) and
+                (l2 < xn2 < a2),
             )
 
             # test `best`
