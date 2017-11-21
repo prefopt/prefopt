@@ -1,0 +1,5 @@
+PrefOpt.egg-info/
+build/
+core
+.eggs/
+old/
