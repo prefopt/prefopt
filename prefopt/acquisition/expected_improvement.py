@@ -1,5 +1,5 @@
 """
-Expected improvement acquisition for active preference learning.
+Expected improvement acquisition.
 """
 
 from __future__ import absolute_import
@@ -94,8 +94,10 @@ class ExpectedImprovementAcquirer(Acquirer):
 
             # find highest-value item
             def func(x):
-                mean = self.model.mean([x])
-                std = np.sqrt(self.model.variance([x]))
+                if x.ndim == 1:
+                    x = [x]
+                mean = self.model.mean(x)
+                std = np.sqrt(self.model.variance(x))
                 return expected_improvement(mean, std, best_f)
 
             self._next = tuple(self.optimizer.maximize(func))

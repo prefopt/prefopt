@@ -20,12 +20,12 @@ from prefopt.data import UniformPreferenceDict
 from prefopt.model.thurstone_mosteller import (
     ThurstoneMostellerGaussianProcessModel
 )
-from prefopt.optimization import DirectOptimizer
+from prefopt.optimization import DirectOptimizer, GridSearchOptimizer
 
 
 class TestExpectedImprovementAcquirer(tf.test.TestCase):
 
-    def test_public_interface(self):
+    def test_interface_with_direct_optimizer(self):
         with self.test_session():
             # set RNG seed
             np.random.seed(0)
@@ -37,6 +37,87 @@ class TestExpectedImprovementAcquirer(tf.test.TestCase):
                 (-3, 6),
             ]
             optimizer = DirectOptimizer(bounds)
+            model = ThurstoneMostellerGaussianProcessModel()
+
+            data = UniformPreferenceDict(2)
+            a = (0, 0)
+            b = (1, 1)
+            c = (2, 2)
+            d = (3, 3)
+            data[a, b] = 1
+            data[a, c] = 1
+            data[b, c] = 1
+            data[b, d] = 1
+            data[c, d] = 1
+
+            # construct acquirer
+            acquirer = ExpectedImprovementAcquirer(data, model, optimizer)
+
+            # test that `next` needs to be called before `best`
+            with self.assertRaises(ValueError):
+                acquirer.best
+
+            # test that `next` needs to be called before `valuations`
+            with self.assertRaises(ValueError):
+                acquirer.valuations
+
+            # test `next`
+            a1, a2 = a
+            b1, b2 = b
+            xn = xn1, xn2 = acquirer.next
+            self.assertTrue(
+                (a1 < xn1 < b1) and
+                (a2 < xn2 < b2)
+            )
+            self.assertTrue(np.allclose(xn, acquirer.next))
+
+            # test `best`
+            best = acquirer.best
+            self.assertTrue(np.allclose(a, best))
+            self.assertTrue(np.allclose(best, acquirer.best))
+
+            # test `valuations`
+            valuations = acquirer.valuations
+            x, f = zip(*valuations)
+            self.assertEqual(len(x), len(data.preferences()))
+            self.assertTrue(all(a < b for a, b in zip(x, x[1:])))
+            self.assertTrue(all(a > b for a, b in zip(f, f[1:])))
+
+            # test `update`
+            e = (-1, -1)
+            acquirer.update(e, a, 1)
+
+            # test `next`
+            l1, l2 = (x[0] for x in bounds)
+            xn1, xn2 = acquirer.next
+            self.assertTrue(
+                (l1 < xn1 < a1) and
+                (l2 < xn2 < a2),
+            )
+
+            # test `best`
+            best = acquirer.best
+            self.assertTrue(np.allclose(e, best))
+
+            # test `valuations`
+            valuations = acquirer.valuations
+            x, f = zip(*valuations)
+            self.assertEqual(len(x), len(data.preferences()))
+            self.assertTrue(all(a < b for a, b in zip(x, x[1:])))
+            self.assertTrue(all(a > b for a, b in zip(f, f[1:])))
+
+    def test_interface_with_grid_search_optimizer(self):
+        with self.test_session():
+            # set RNG seed
+            np.random.seed(0)
+            tf.set_random_seed(0)
+
+            # set up
+            bounds = [
+                (-3, 6),
+                (-3, 6),
+            ]
+            optimizer = GridSearchOptimizer(bounds)
             model = ThurstoneMostellerGaussianProcessModel()
 
             data = UniformPreferenceDict(2)
