@@ -19,6 +19,8 @@ from edward.util import rbf
 
 from prefopt.acquisition import PreferenceModel
 
+all = ['ThurstoneMostellerGaussianProcessModel']
+
 
 def compute_latent(f, y, sigma):
     z = tf.stack([f[r] - f[c] for r, c in y.keys()])
