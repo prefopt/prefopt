@@ -1,5 +1,5 @@
 """
-Tests for prefopt.acquisition.
+Tests for prefopt.optimization.direct.
 """
 
 from __future__ import absolute_import
@@ -10,7 +10,7 @@ import unittest
 
 import numpy as np
 
-from prefopt.optimization import DirectOptimizer
+from prefopt.optimization.direct import DirectOptimizer
 
 
 class TestOptimization(unittest.TestCase):

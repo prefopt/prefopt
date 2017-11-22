@@ -1,5 +1,5 @@
 """
-Optimizer for acquisition function.
+DIRECT optimizer.
 """
 
 from __future__ import absolute_import
@@ -11,10 +11,9 @@ import functools
 from scipydirect import minimize
 
 from prefopt.acquisition import Optimizer
+from prefopt.optimization import OptimizationError
 
-
-class OptimizationError(RuntimeError):
-    """Optimization did not terminate successfully."""
+__all__ = ['DirectOptimizer']
 
 
 class DirectOptimizer(Optimizer):
