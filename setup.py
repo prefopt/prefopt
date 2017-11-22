@@ -54,7 +54,7 @@ class LintCommand(Command):
 
 setup(
     # basic setup
-    name='PrefOpt',
+    name='prefopt',
     version='0.0.1',
     packages=find_packages(exclude=[
         'examples',
@@ -97,6 +97,8 @@ setup(
         #   5 - Production/Stable
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
+        'Intended Audience :: Education',
+        'Intended Audience :: Science/Research',
         'License :: OSI Approved :: MIT License',
         # supported Python versions
         'Programming Language :: Python :: 2.7',
