@@ -85,7 +85,7 @@ setup(
     },
 
     # PyPI metadata
-    author='Ian Dewancker, Jakob Bauer',
+    author='Ian Dewancker, Jakob Bauer, Michael McCourt',
     author_email='prefopt-dev@googlegroups.com',
     url='https://github.com/prefopt/prefopt',
     license='MIT',
