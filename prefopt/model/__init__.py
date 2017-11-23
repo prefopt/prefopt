@@ -1,1 +1,1 @@
-from .thurstone_mosteller import *  # noqa
+from .binary import *  # noqa

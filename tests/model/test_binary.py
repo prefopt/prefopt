@@ -1,5 +1,5 @@
 """
-Tests for prefopt.model.thurstone_mosteller.
+Tests for prefopt.model.binary.
 """
 
 from __future__ import absolute_import
@@ -13,9 +13,10 @@ import tensorflow as tf
 
 from prefopt.acquisition.expected_improvement import preprocess_data
 from prefopt.data import PreferenceDict
-from prefopt.model.thurstone_mosteller import (
-    ThurstoneMostellerGaussianProcessModel,
+from prefopt.model.binary import (
+    BinaryPreferenceModel,
     compute_latent,
+    compute_logit,
     compute_probit,
     encode_observations
 )
@@ -42,13 +43,26 @@ class TestHelperFunctions(tf.test.TestCase):
                 w
             )
 
-    def test_compute_probits(self):
+    def test_compute_probit(self):
         with self.test_session():
             N = 3
             z_ = tf.placeholder(tf.float32, [N])
             z = np.array([0., 1.96, 3.], dtype=np.float32)
             phi = compute_probit(z)
             w = np.array([0.5, 0.9750021, 0.9986501], dtype=np.float32)
+
+            self.assertAllClose(
+                phi.eval(feed_dict={z_: z}),
+                w
+            )
+
+    def test_compute_logit(self):
+        with self.test_session():
+            N = 3
+            z_ = tf.placeholder(tf.float32, [N])
+            z = np.array([-5e1, 0, 1e6], dtype=np.float32)
+            phi = compute_logit(z)
+            w = np.array([0, 0.5, 1], dtype=np.float32)
 
             self.assertAllClose(
                 phi.eval(feed_dict={z_: z}),
@@ -68,7 +82,7 @@ class TestHelperFunctions(tf.test.TestCase):
 
 class TestModel(tf.test.TestCase):
 
-    def test_fit_simple(self):
+    def test_fit_simple_probit(self):
         with self.test_session():
             data = PreferenceDict()
             a = (0,)
@@ -81,10 +95,42 @@ class TestModel(tf.test.TestCase):
             data[c, b] = -1
             data[c, d] = 1
 
-            m = ThurstoneMostellerGaussianProcessModel(
+            m = BinaryPreferenceModel(
                 n_iter=500,
                 n_samples=20,
-                sigma=1.
+                sigma=1.,
+                link='probit'
+            )
+            X, y = preprocess_data(data)
+            m.fit(X, y)
+            mean = m.mean([
+                (0,),
+                (1,),
+                (2,),
+                (3,),
+            ])
+            self.assertTrue(
+                all(x > y for x, y in zip(mean, mean[1:]))
+            )
+
+    def test_fit_simple_logit(self):
+        with self.test_session():
+            data = PreferenceDict()
+            a = (0,)
+            b = (1,)
+            c = (2,)
+            d = (3,)
+
+            data[a, b] = 1
+            data[a, c] = 1
+            data[c, b] = -1
+            data[c, d] = 1
+
+            m = BinaryPreferenceModel(
+                n_iter=500,
+                n_samples=20,
+                sigma=1.,
+                link='logit'
             )
             X, y = preprocess_data(data)
             m.fit(X, y)

@@ -17,9 +17,7 @@ from prefopt.acquisition.expected_improvement import (
         preprocess_data
 )
 from prefopt.data import UniformPreferenceDict
-from prefopt.model.thurstone_mosteller import (
-    ThurstoneMostellerGaussianProcessModel
-)
+from prefopt.model import BinaryPreferenceModel
 from prefopt.optimization import DirectOptimizer, GridSearchOptimizer
 
 
@@ -37,7 +35,7 @@ class TestExpectedImprovementAcquirer(tf.test.TestCase):
                 (-3, 6),
             ]
             optimizer = DirectOptimizer(bounds)
-            model = ThurstoneMostellerGaussianProcessModel()
+            model = BinaryPreferenceModel()
 
             data = UniformPreferenceDict(2)
             a = (0, 0)
@@ -118,7 +116,7 @@ class TestExpectedImprovementAcquirer(tf.test.TestCase):
                 (-3, 6),
             ]
             optimizer = GridSearchOptimizer(bounds)
-            model = ThurstoneMostellerGaussianProcessModel()
+            model = BinaryPreferenceModel()
 
             data = UniformPreferenceDict(2)
             a = (0, 0)

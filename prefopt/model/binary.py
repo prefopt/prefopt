@@ -1,5 +1,5 @@
 """
-Thurstone-Mosteller preference model.
+Gaussian-process model for binary preferences.
 """
 
 from __future__ import absolute_import
@@ -19,7 +19,7 @@ from edward.util import rbf
 
 from prefopt.acquisition import PreferenceModel
 
-all = ['ThurstoneMostellerGaussianProcessModel']
+all = ['BinaryPreferenceModel']
 
 
 def compute_latent(f, y, sigma):
@@ -33,13 +33,20 @@ def compute_probit(z):
     return dist.cdf(z)
 
 
+def compute_logit(z):
+    return 1 / (1 + tf.exp(-z))
+
+
 def encode_observations(y):
     return np.array([(1 if x == 1 else 0) for x in y.values()])
 
 
-class ThurstoneMostellerGaussianProcessModel(PreferenceModel):
+class BinaryPreferenceModel(PreferenceModel):
     """
-    Thurstone-Mosteller model with Gaussian process prior.
+    Gaussian-process model for binary preferences.
+
+    Depending on the choice of the link function, the model is either a
+    Thurstone-Mosteller (probit) or a Bradley-Terry (logit) model.
 
     Attributes
     ----------
@@ -49,12 +56,23 @@ class ThurstoneMostellerGaussianProcessModel(PreferenceModel):
         Number of samples for calculating stochastic gradient.
     sigma : float, optional (default: 1.0)
         Standard deviation of observation noise.
+    link : str, optional (default: probit)
+        Link function. Can either be probit in which case the model is a
+        Thurstone-Mosteller model or logit in which case the model is a
+        Bradley-Terry model.
     """
 
-    def __init__(self, n_iter=500, n_samples=1, sigma=1.0):
+    def __init__(self, n_iter=500, n_samples=1, sigma=1.0, link='probit'):
         self.sigma = sigma
         self.n_iter = n_iter
         self.n_samples = n_samples
+
+        if link == 'probit':
+            self.compute_link = compute_probit
+        elif link == 'logit':
+            self.compute_link = compute_logit
+        else:
+            raise ValueError('Invalid link function: {}'.format(link))
 
     def fit(self, X, y):
         # make copy of data
@@ -72,7 +90,7 @@ class ThurstoneMostellerGaussianProcessModel(PreferenceModel):
 
         # define likelihood
         z = compute_latent(f, self.y, self.sigma)
-        phi = compute_probit(z)
+        phi = self.compute_link(z)
         d_ = Bernoulli(probs=phi)
         d = encode_observations(self.y)
 

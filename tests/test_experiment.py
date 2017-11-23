@@ -21,9 +21,7 @@ from prefopt.experiment import (
     OutputPresenter,
     PreferenceExperiment
 )
-from prefopt.model.thurstone_mosteller import (
-    ThurstoneMostellerGaussianProcessModel
-)
+from prefopt.model import BinaryPreferenceModel
 from prefopt.optimization import DirectOptimizer
 
 
@@ -147,7 +145,7 @@ class TestPreferenceExperiment(unittest.TestCase):
             (-3, 6),
         ]
         optimizer = DirectOptimizer(bounds)
-        model = ThurstoneMostellerGaussianProcessModel()
+        model = BinaryPreferenceModel()
         presenter = MockInputPresenter()
         output = MockOutputPresenter()
 

@@ -20,9 +20,7 @@ from prefopt.experiment import (
     OutputPresenter,
     PreferenceExperiment
 )
-from prefopt.model.thurstone_mosteller import (
-    ThurstoneMostellerGaussianProcessModel
-)
+from prefopt.model import BinaryPreferenceModel
 from prefopt.optimization import DirectOptimizer
 
 
@@ -112,7 +110,7 @@ def run():
     output = BenchmarkOutputPresenter(func.__class__.__name__)
 
     optimizer = DirectOptimizer(bounds)
-    model = ThurstoneMostellerGaussianProcessModel()
+    model = BinaryPreferenceModel()
     data = UniformPreferenceDict(2)
 
     acquirer = ExpectedImprovementAcquirer(
