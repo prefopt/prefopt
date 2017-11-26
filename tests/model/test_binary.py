@@ -82,6 +82,10 @@ class TestHelperFunctions(tf.test.TestCase):
 
 class TestModel(tf.test.TestCase):
 
+    def test_invalid_link(self):
+        with self.assertRaises(ValueError):
+            BinaryPreferenceModel(link='foo')
+
     def test_fit_simple_probit(self):
         with self.test_session():
             data = PreferenceDict()

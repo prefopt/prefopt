@@ -41,6 +41,46 @@ def encode_observations(y):
     return np.array([(1 if x == 1 else 0) for x in y.values()])
 
 
+def define_prior(N, D, eps=1.0):
+    X = tf.placeholder(tf.float32, [N, D])
+    K = rbf(X) + np.eye(N) * eps
+    f = MultivariateNormalTriL(
+        loc=tf.zeros(N),
+        scale_tril=tf.cholesky(K)
+    )
+    return X, K, f
+
+
+def define_likelihood(f, y, sigma, compute_link):
+    z = compute_latent(f, y, sigma)
+    phi = compute_link(z)
+    d = Bernoulli(probs=phi)
+    return d
+
+
+def define_variational_distribution(N):
+    qf = Normal(
+        loc=tf.Variable(tf.random_normal([N])),
+        scale=tf.nn.softplus(tf.Variable(tf.random_normal([N])))
+    )
+    return qf
+
+
+def define_posterior_predictive(D, X, K, f_map):
+    x = tf.placeholder(tf.float32, [None, D])
+    k = rbf(X, x)
+    K_inv = tf.matrix_inverse(K)
+    mu = tf.reduce_sum(
+        tf.matmul(tf.transpose(k), K_inv) * f_map,
+        axis=1
+    )
+    var = 1.0 - tf.reduce_sum(
+        tf.matmul(tf.transpose(k), K_inv) * tf.transpose(k),
+        axis=1
+    )
+    return x, mu, var
+
+
 class BinaryPreferenceModel(PreferenceModel):
     """
     Gaussian-process model for binary preferences.
@@ -78,46 +118,28 @@ class BinaryPreferenceModel(PreferenceModel):
         # make copy of data
         self.X = X.copy()
         self.y = y.copy()
-
-        # define prior
         N, D = X.shape
-        self.X_ = tf.placeholder(tf.float32, [N, D])
-        K = rbf(self.X_) + 1
-        f = MultivariateNormalTriL(
-            loc=tf.zeros(N),
-            scale_tril=tf.cholesky(K)
-        )
 
-        # define likelihood
-        z = compute_latent(f, self.y, self.sigma)
-        phi = self.compute_link(z)
-        d_ = Bernoulli(probs=phi)
+        # preprocess data
         d = encode_observations(self.y)
 
+        # define prior
+        self.X_, K, f = define_prior(N, D)
+
+        # define likelihood
+        d_ = define_likelihood(f, self.y, self.sigma, self.compute_link)
+
         # define variational distribution
-        qf = Normal(
-            loc=tf.Variable(tf.random_normal([N])),
-            scale=tf.nn.softplus(tf.Variable(tf.random_normal([N])))
-        )
+        qf = define_variational_distribution(N)
 
         # perform inference
         inference = KLqp({f: qf}, data={self.X_: self.X, d_: d})
         inference.run(n_iter=self.n_iter, n_samples=self.n_samples)
 
         # define posterior predictive mean and variance
-        self.x_ = tf.placeholder(tf.float32, [None, D])
-        k = rbf(self.X_, self.x_)
-        K_inv = tf.matrix_inverse(K)
         f_map = qf.mean().eval()
-
-        self.mu = tf.reduce_sum(
-            tf.matmul(tf.transpose(k), K_inv) * f_map,
-            axis=1
-        )
-        self.var = 1.0 - tf.reduce_sum(
-            tf.matmul(tf.transpose(k), K_inv) * tf.transpose(k),
-            axis=1
-        )
+        self.x_, self.mu, self.var = define_posterior_predictive(
+            D, self.X_, K, f_map)
 
     def mean(self, X):
         """The posterior mean function evaluated at points X."""
