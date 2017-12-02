@@ -18,7 +18,22 @@ __all__ = [
 
 
 def preprocess_data(data):
-    """Preprocess preference data for use in model."""
+    """
+    Preprocess preference data for use in model.
+
+    Parameters
+    ----------
+    data : PreferenceDict
+        A PreferenceDict object.
+
+    Returns
+    -------
+    X : np.array, shape (N, D)
+        The preference items.
+    y : dict
+        Mapping from indices corresponding to items (rows) in X to preferences.
+        For instance, {(0, 1): 1} means that X[0] is preferred over X[1].
+    """
     preferences = sorted(data.preferences())
     ix = {k: v for v, k in enumerate(preferences)}
     X = np.array(preferences)
@@ -61,10 +76,12 @@ class ExpectedImprovementAcquirer(Acquirer):
 
     Parameters
     ----------
+    data : PreferenceDict
+        A PreferenceDict object.
     model : PreferenceModel
-        PreferenceModel object.
+        A PreferenceModel object.
     optimizer : AcquisitionOptimizer
-        AcquisitionOptimizer object that can maximize the acquisition function.
+        An AcquisitionOptimizer object.
     """
 
     def __init__(self, data, model, optimizer):
