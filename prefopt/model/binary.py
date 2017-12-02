@@ -41,20 +41,68 @@ def encode_observations(y):
     return np.array([(1 if x == 1 else 0) for x in y.values()])
 
 
-def define_prior(N, D, eps=1.0):
+def define_prior(N, D, sigma_noise):
+    """
+    Define a Gaussian process prior.
+
+    Parameters
+    ----------
+    N : int
+        The number of observations.
+    D : int
+        The number of input dimensions.
+    sigma_noise : float
+        The noise variance.
+
+    Returns
+    -------
+    X : tf.placeholder, shape (N, D)
+        A placeholder for the input data.
+    K : tf.Tensor, shape (N, N)
+        The covariance matrix.
+    f : edward.RandomVariable, shape (N,)
+        The Gaussian process prior.
+    """
+    # define model
     X = tf.placeholder(tf.float32, [N, D])
-    K = rbf(X) + np.eye(N) * eps
+    K = rbf(X) + np.eye(N) * sigma_noise
     f = MultivariateNormalTriL(
         loc=tf.zeros(N),
         scale_tril=tf.cholesky(K)
     )
+
+    # check dimensions
+    assert X.shape == (N, D)
+    assert K.shape == (N, N)
+    assert f.shape == (N,)
+
     return X, K, f
 
 
-def define_likelihood(f, y, sigma, compute_link):
-    z = compute_latent(f, y, sigma)
+def define_likelihood(f, y, sigma_noise, compute_link):
+    """
+    Define likelihood for binary observations.
+
+    Parameters
+    ----------
+    f : edward.RandomVariable, shape (N,)
+        The Gaussian process prior.
+    y : dict
+        Mapping from indices corresponding to items to preferences.
+    sigma_noise : float
+        The standard deviation of observation noise.
+    compute_link : func
+        The link function.
+
+    Returns
+    -------
+    d : edward.RandomVariable, shape (N,)
+        The observations.
+    """
+    z = compute_latent(f, y, sigma_noise)
     phi = compute_link(z)
     d = Bernoulli(probs=phi)
+    assert d.shape == (len(y),)
     return d
 
 
@@ -66,18 +114,48 @@ def define_variational_distribution(N):
     return qf
 
 
-def define_posterior_predictive(D, X, K, f_map):
+def define_posterior_predictive(X, K, f, sigma_signal, sigma_noise):
+    """
+    Define the posterior predictive mean and variance.
+
+    Parameters
+    ----------
+    X : tf.placeholder, shape (N, D)
+        A placeholder for the input data.
+    K : tf.Tensor, shape (N, N)
+        The covariance matrix.
+    f : edward.RandomVariable, shape (N,)
+        The Gaussian process prior.
+    sigma_signal : float
+        The signal variance.
+    sigma_noise : float
+        The noise variance.
+
+    Returns
+    -------
+    x : tf.placeholder, shape (None, D)
+        A placeholder for the future data.
+    mu : tf.Tensor, shape (None,)
+        The mean function.
+    var : tf.Tensor, shape (None,)
+        The variance function.
+    """
+    N, D = X.shape
     x = tf.placeholder(tf.float32, [None, D])
     k = rbf(X, x)
     K_inv = tf.matrix_inverse(K)
+
     mu = tf.reduce_sum(
-        tf.matmul(tf.transpose(k), K_inv) * f_map,
+        tf.matmul(tf.transpose(k), K_inv) * f,
         axis=1
     )
-    var = 1.0 - tf.reduce_sum(
+
+    c = sigma_signal + sigma_noise
+    var = c - tf.reduce_sum(
         tf.matmul(tf.transpose(k), K_inv) * tf.transpose(k),
         axis=1
     )
+
     return x, mu, var
 
 
@@ -91,19 +169,23 @@ class BinaryPreferenceModel(PreferenceModel):
     Attributes
     ----------
     n_iter : int, optional (default: 500)
-        Number of optimization iterations.
+        The number of optimization iterations.
     n_samples : int, optional (default: 1)
-        Number of samples for calculating stochastic gradient.
-    sigma : float, optional (default: 1.0)
-        Standard deviation of observation noise.
+        The number of samples for calculating stochastic gradient.
+    sigma_signal : float, optional (default: 1.0)
+        The variance of the signal.
+    sigma_noise : float, optional (default: 1.0)
+        The variance of the observation noise.
     link : str, optional (default: probit)
-        Link function. Can either be probit in which case the model is a
+        The link function. Can either be probit in which case the model is a
         Thurstone-Mosteller model or logit in which case the model is a
         Bradley-Terry model.
     """
 
-    def __init__(self, n_iter=500, n_samples=1, sigma=1.0, link='probit'):
-        self.sigma = sigma
+    def __init__(self, n_iter=500, n_samples=1, sigma_signal=1.0,
+                 sigma_noise=1.0, link='probit'):
+        self.sigma_signal = sigma_signal
+        self.sigma_noise = sigma_noise
         self.n_iter = n_iter
         self.n_samples = n_samples
 
@@ -115,19 +197,35 @@ class BinaryPreferenceModel(PreferenceModel):
             raise ValueError('Invalid link function: {}'.format(link))
 
     def fit(self, X, y):
+        """
+        Perfom inference in the preference model.
+
+        This will update the mean and variance function of the model.
+
+        Parameters
+        ----------
+        X : np.array, shape (N, D)
+            The preference items.
+        y : dict
+            Mapping from indices corresponding to items (rows) in X to
+            preferences. For instance, {(0, 1): 1} means that X[0] is preferred
+            over X[1].
+        """
+        # get dimensions
+        N, D = X.shape
+
         # make copy of data
         self.X = X.copy()
         self.y = y.copy()
-        N, D = X.shape
 
         # preprocess data
         d = encode_observations(self.y)
 
         # define prior
-        self.X_, K, f = define_prior(N, D)
+        self.X_, K, f = define_prior(N, D, self.sigma_noise)
 
         # define likelihood
-        d_ = define_likelihood(f, self.y, self.sigma, self.compute_link)
+        d_ = define_likelihood(f, self.y, self.sigma_noise, self.compute_link)
 
         # define variational distribution
         qf = define_variational_distribution(N)
@@ -137,9 +235,9 @@ class BinaryPreferenceModel(PreferenceModel):
         inference.run(n_iter=self.n_iter, n_samples=self.n_samples)
 
         # define posterior predictive mean and variance
-        f_map = qf.mean().eval()
+        qf_mean = qf.mean().eval()
         self.x_, self.mu, self.var = define_posterior_predictive(
-            D, self.X_, K, f_map)
+            self.X_, K, qf_mean, self.sigma_signal, self.sigma_noise)
 
     def mean(self, X):
         """The posterior mean function evaluated at points X."""
