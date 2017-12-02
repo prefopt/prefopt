@@ -141,12 +141,17 @@ class TestHelperFunctions(tf.test.TestCase):
                 [2.3, 1.7],
             ])
             N, D = X.shape
-            sigma_signal = 1.0
+            sigma_signal = 1.2
             sigma_noise = 0.1
             lengthscale = 1.0
 
             # define prior
-            X_, K, f = define_prior(N, D, sigma_noise=sigma_noise)
+            X_, K, f = define_prior(
+                N,
+                D,
+                sigma_noise=sigma_noise,
+                sigma_signal=sigma_signal
+            )
 
             self.assertAllClose(
                 K.eval(feed_dict={X_: X}),
@@ -186,7 +191,7 @@ class TestHelperFunctions(tf.test.TestCase):
     def test_define_posterior_predictive_1d_simple(self):
         with self.test_session():
             N, D = 3, 1
-            sigma_signal = 1.0
+            sigma_signal = 0.7
             sigma_noise = 1.5
             lengthscale = 1.0
 
@@ -268,7 +273,7 @@ class TestHelperFunctions(tf.test.TestCase):
     def test_define_posterior_predictive_2d_simple(self):
         with self.test_session():
             N, D = 3, 2
-            sigma_signal = 1.0
+            sigma_signal = 3.3
             sigma_noise = 1.5
             lengthscale = 1.0
 

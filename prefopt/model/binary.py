@@ -41,7 +41,7 @@ def encode_observations(y):
     return np.array([(1 if x == 1 else 0) for x in y.values()])
 
 
-def define_prior(N, D, sigma_noise):
+def define_prior(N, D, sigma_noise, sigma_signal):
     """
     Define a Gaussian process prior.
 
@@ -53,6 +53,8 @@ def define_prior(N, D, sigma_noise):
         The number of input dimensions.
     sigma_noise : float
         The noise variance.
+    sigma_signal : float
+        The signal variance.
 
     Returns
     -------
@@ -65,7 +67,7 @@ def define_prior(N, D, sigma_noise):
     """
     # define model
     X = tf.placeholder(tf.float32, [N, D])
-    K = rbf(X) + np.eye(N) * sigma_noise
+    K = rbf(X, variance=sigma_signal) + np.eye(N) * sigma_noise
     f = MultivariateNormalTriL(
         loc=tf.zeros(N),
         scale_tril=tf.cholesky(K)
@@ -142,7 +144,7 @@ def define_posterior_predictive(X, K, f, sigma_signal, sigma_noise):
     """
     N, D = X.shape
     x = tf.placeholder(tf.float32, [None, D])
-    k = rbf(X, x)
+    k = rbf(X, x, variance=sigma_signal)
     K_inv = tf.matrix_inverse(K)
 
     mu = tf.reduce_sum(
@@ -222,7 +224,7 @@ class BinaryPreferenceModel(PreferenceModel):
         d = encode_observations(self.y)
 
         # define prior
-        self.X_, K, f = define_prior(N, D, self.sigma_noise)
+        self.X_, K, f = define_prior(N, D, self.sigma_noise, self.sigma_signal)
 
         # define likelihood
         d_ = define_likelihood(f, self.y, self.sigma_noise, self.compute_link)
