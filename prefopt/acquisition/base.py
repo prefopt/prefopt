@@ -22,7 +22,7 @@ class PreferenceModelMeta(object):
 
     @abstractmethod
     def fit(self, X, y):
-        """Perform inference on the preference model."""
+        """Perform inference in the preference model."""
 
     @abstractmethod
     def mean(self, x):
