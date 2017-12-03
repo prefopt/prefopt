@@ -143,14 +143,15 @@ class TestHelperFunctions(tf.test.TestCase):
             N, D = X.shape
             sigma_signal = 1.2
             sigma_noise = 0.1
-            lengthscale = 1.0
+            lengthscale = 1.2
 
             # define prior
             X_, K, f = define_prior(
                 N,
                 D,
                 sigma_noise=sigma_noise,
-                sigma_signal=sigma_signal
+                sigma_signal=sigma_signal,
+                lengthscale=lengthscale
             )
 
             self.assertAllClose(
@@ -193,7 +194,7 @@ class TestHelperFunctions(tf.test.TestCase):
             N, D = 3, 1
             sigma_signal = 0.7
             sigma_noise = 1.5
-            lengthscale = 1.0
+            lengthscale = 1.2
 
             X_ = tf.placeholder(tf.float32, [N, D])
             K_ = tf.placeholder(tf.float32, [N, N])
@@ -213,7 +214,8 @@ class TestHelperFunctions(tf.test.TestCase):
                 K_,
                 f_,
                 sigma_signal,
-                sigma_noise
+                sigma_noise,
+                lengthscale
             )
 
             base_dict = {
@@ -275,7 +277,7 @@ class TestHelperFunctions(tf.test.TestCase):
             N, D = 3, 2
             sigma_signal = 3.3
             sigma_noise = 1.5
-            lengthscale = 1.0
+            lengthscale = 0.8
 
             X_ = tf.placeholder(tf.float32, [N, D])
             K_ = tf.placeholder(tf.float32, [N, N])
@@ -295,7 +297,8 @@ class TestHelperFunctions(tf.test.TestCase):
                 K_,
                 f_,
                 sigma_signal,
-                sigma_noise
+                sigma_noise,
+                lengthscale
             )
 
             base_dict = {

@@ -41,7 +41,7 @@ def encode_observations(y):
     return np.array([(1 if x == 1 else 0) for x in y.values()])
 
 
-def define_prior(N, D, sigma_noise, sigma_signal):
+def define_prior(N, D, sigma_noise, sigma_signal, lengthscale):
     """
     Define a Gaussian process prior.
 
@@ -55,6 +55,8 @@ def define_prior(N, D, sigma_noise, sigma_signal):
         The noise variance.
     sigma_signal : float
         The signal variance.
+    lengthscale : float
+        The lengthscale parameter.
 
     Returns
     -------
@@ -67,7 +69,8 @@ def define_prior(N, D, sigma_noise, sigma_signal):
     """
     # define model
     X = tf.placeholder(tf.float32, [N, D])
-    K = rbf(X, variance=sigma_signal) + np.eye(N) * sigma_noise
+    K = (rbf(X, variance=sigma_signal, lengthscale=lengthscale) +
+         np.eye(N) * sigma_noise)
     f = MultivariateNormalTriL(
         loc=tf.zeros(N),
         scale_tril=tf.cholesky(K)
@@ -116,7 +119,8 @@ def define_variational_distribution(N):
     return qf
 
 
-def define_posterior_predictive(X, K, f, sigma_signal, sigma_noise):
+def define_posterior_predictive(X, K, f, sigma_signal, sigma_noise,
+                                lengthscale):
     """
     Define the posterior predictive mean and variance.
 
@@ -141,10 +145,12 @@ def define_posterior_predictive(X, K, f, sigma_signal, sigma_noise):
         The mean function.
     var : tf.Tensor, shape (None,)
         The variance function.
+    lengthscale : float
+        The lengthscale parameter.
     """
     N, D = X.shape
     x = tf.placeholder(tf.float32, [None, D])
-    k = rbf(X, x, variance=sigma_signal)
+    k = rbf(X, x, variance=sigma_signal, lengthscale=lengthscale)
     K_inv = tf.matrix_inverse(K)
 
     mu = tf.reduce_sum(
@@ -182,14 +188,17 @@ class BinaryPreferenceModel(PreferenceModel):
         The link function. Can either be probit in which case the model is a
         Thurstone-Mosteller model or logit in which case the model is a
         Bradley-Terry model.
+    lengthscale : float, optional (default: 1.0)
+        The lengthscale parameter.
     """
 
     def __init__(self, n_iter=500, n_samples=1, sigma_signal=1.0,
-                 sigma_noise=1.0, link='probit'):
-        self.sigma_signal = sigma_signal
-        self.sigma_noise = sigma_noise
+                 sigma_noise=1.0, link='probit', lengthscale=1.0):
+        self.lengthscale = lengthscale
         self.n_iter = n_iter
         self.n_samples = n_samples
+        self.sigma_noise = sigma_noise
+        self.sigma_signal = sigma_signal
 
         if link == 'probit':
             self.compute_link = compute_probit
@@ -224,10 +233,21 @@ class BinaryPreferenceModel(PreferenceModel):
         d = encode_observations(self.y)
 
         # define prior
-        self.X_, K, f = define_prior(N, D, self.sigma_noise, self.sigma_signal)
+        self.X_, K, f = define_prior(
+            N,
+            D,
+            self.sigma_noise,
+            self.sigma_signal,
+            self.lengthscale
+        )
 
         # define likelihood
-        d_ = define_likelihood(f, self.y, self.sigma_noise, self.compute_link)
+        d_ = define_likelihood(
+            f,
+            self.y,
+            self.sigma_noise,
+            self.compute_link
+        )
 
         # define variational distribution
         qf = define_variational_distribution(N)
@@ -239,7 +259,13 @@ class BinaryPreferenceModel(PreferenceModel):
         # define posterior predictive mean and variance
         qf_mean = qf.mean().eval()
         self.x_, self.mu, self.var = define_posterior_predictive(
-            self.X_, K, qf_mean, self.sigma_signal, self.sigma_noise)
+            self.X_,
+            K,
+            qf_mean,
+            self.sigma_signal,
+            self.sigma_noise,
+            self.lengthscale
+        )
 
     def mean(self, X):
         """The posterior mean function evaluated at points X."""
