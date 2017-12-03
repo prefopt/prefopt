@@ -27,16 +27,18 @@ from prefopt.model.binary import (
 
 def compute_rbf(X, Y=None, sigma_signal=None, sigma_noise=None,
                 lengthscale=None):
+    X = X / lengthscale
     XX = np.einsum('ij,ij->i', X, X)[:, np.newaxis]
     if Y is None or Y is X:
         Y = X
         YY = XX
         delta_xy = np.eye(len(X))
     else:
+        Y = Y / lengthscale
         YY = np.einsum('ij,ij->i', Y, Y)
         delta_xy = 0
     XY = np.einsum('ij,kj->ik', X, Y)
-    K = (XX + YY.T - 2 * XY) / (2.0 * lengthscale * lengthscale)
+    K = (XX + YY.T - 2 * XY) / 2.0
     return sigma_signal * np.exp(-K) + delta_xy * sigma_noise
 
 
@@ -50,13 +52,15 @@ def compute_posterior_predictive(X, x, f, sigma_signal, sigma_noise,
     C = compute_rbf(
         X,
         sigma_signal=sigma_signal,
-        sigma_noise=sigma_noise, lengthscale=lengthscale
+        sigma_noise=sigma_noise,
+        lengthscale=lengthscale
     )
     k = compute_rbf(
         X,
         Y=x,
         sigma_signal=sigma_signal,
-        sigma_noise=sigma_noise, lengthscale=lengthscale
+        sigma_noise=sigma_noise,
+        lengthscale=lengthscale
     )
     C_inv = np.linalg.inv(C)
     c = sigma_signal + sigma_noise
@@ -130,7 +134,7 @@ class TestHelperFunctions(tf.test.TestCase):
         e = np.array([1, 1, 0])
         self.assertAllEqual(d, e)
 
-    def test_define_prior(self):
+    def test_define_prior_scalar_lengthscale(self):
         with self.test_session():
             # set up
             X = np.array([
@@ -144,6 +148,45 @@ class TestHelperFunctions(tf.test.TestCase):
             sigma_signal = 1.2
             sigma_noise = 0.1
             lengthscale = 1.2
+
+            # define prior
+            X_, K, f = define_prior(
+                N,
+                D,
+                sigma_noise=sigma_noise,
+                sigma_signal=sigma_signal,
+                lengthscale=lengthscale
+            )
+
+            self.assertAllClose(
+                K.eval(feed_dict={X_: X}),
+                compute_rbf(
+                    X,
+                    sigma_signal=sigma_signal,
+                    sigma_noise=sigma_noise,
+                    lengthscale=lengthscale
+                )
+            )
+
+            self.assertAllClose(
+                f.mean().eval(feed_dict={X_: X}),
+                np.zeros(N)
+            )
+
+    def test_define_prior_vector_lengthscale(self):
+        with self.test_session():
+            # set up
+            X = np.array([
+                [0, 0],
+                [1, 0],
+                [0, 1],
+                [1, 1],
+                [2.3, 1.7],
+            ])
+            N, D = X.shape
+            sigma_signal = 1.2
+            sigma_noise = 0.1
+            lengthscale = np.array([1.1, 0.4], dtype=np.float32)
 
             # define prior
             X_, K, f = define_prior(
@@ -272,12 +315,99 @@ class TestHelperFunctions(tf.test.TestCase):
                 mu_true
             )
 
-    def test_define_posterior_predictive_2d_simple(self):
+    def test_define_posterior_predictive_2d_scalar_lengthscale(self):
         with self.test_session():
             N, D = 3, 2
             sigma_signal = 3.3
             sigma_noise = 1.5
             lengthscale = 0.8
+
+            X_ = tf.placeholder(tf.float32, [N, D])
+            K_ = tf.placeholder(tf.float32, [N, N])
+            f_ = tf.placeholder(tf.float32, [N])
+
+            X = np.arange(N * D).reshape(N, D)
+            K = compute_rbf(
+                    X,
+                    sigma_signal=sigma_signal,
+                    sigma_noise=sigma_noise,
+                    lengthscale=lengthscale
+                )
+            f = np.zeros(N)
+
+            x_, mu, var = define_posterior_predictive(
+                X_,
+                K_,
+                f_,
+                sigma_signal,
+                sigma_noise,
+                lengthscale
+            )
+
+            base_dict = {
+                X_: X,
+                K_: K,
+                f_: f,
+            }
+
+            # single query point
+            x = np.array([[0.5, 2]])
+
+            mu_true, var_true = compute_posterior_predictive(
+                X,
+                x=x,
+                f=f,
+                sigma_signal=sigma_signal,
+                sigma_noise=sigma_noise,
+                lengthscale=lengthscale
+            )
+
+            feed_dict = {x_: x}
+            feed_dict.update(base_dict)
+
+            self.assertAllClose(
+                var.eval(feed_dict=feed_dict),
+                var_true
+            )
+            self.assertAllClose(
+                mu.eval(feed_dict=feed_dict),
+                mu_true
+            )
+
+            # multiple query points
+            x = np.array([
+                [0, 1.5],
+                [9.2, -3],
+                [17, 2]
+            ])
+
+            mu_true, var_true = compute_posterior_predictive(
+                X,
+                x=x,
+                f=f,
+                sigma_signal=sigma_signal,
+                sigma_noise=sigma_noise,
+                lengthscale=lengthscale
+            )
+
+            feed_dict = {x_: x}
+            feed_dict.update(base_dict)
+
+            self.assertAllClose(
+                var.eval(feed_dict=feed_dict),
+                var_true
+            )
+            self.assertAllClose(
+                mu.eval(feed_dict=feed_dict),
+                mu_true
+            )
+
+    def test_define_posterior_predictive_2d_vector_lengthscale(self):
+        with self.test_session():
+            N, D = 3, 2
+            sigma_signal = 3.3
+            sigma_noise = 1.5
+            lengthscale = np.array([0.8, 2.3], np.float32)
 
             X_ = tf.placeholder(tf.float32, [N, D])
             K_ = tf.placeholder(tf.float32, [N, N])
