@@ -55,8 +55,9 @@ def define_prior(N, D, sigma_noise, sigma_signal, lengthscale):
         The noise variance.
     sigma_signal : float
         The signal variance.
-    lengthscale : float
-        The lengthscale parameter.
+    lengthscale : float or np.array
+        The lengthscale parameter. Can either be a scalar or vector of size D
+        where D is the number of dimensions of the input space.
 
     Returns
     -------
@@ -145,8 +146,9 @@ def define_posterior_predictive(X, K, f, sigma_signal, sigma_noise,
         The mean function.
     var : tf.Tensor, shape (None,)
         The variance function.
-    lengthscale : float
-        The lengthscale parameter.
+    lengthscale : float or np.array
+        The lengthscale parameter. Can either be a scalar or vector of size D
+        where D is the number of dimensions of the input space.
     """
     N, D = X.shape
     x = tf.placeholder(tf.float32, [None, D])
@@ -188,8 +190,9 @@ class BinaryPreferenceModel(PreferenceModel):
         The link function. Can either be probit in which case the model is a
         Thurstone-Mosteller model or logit in which case the model is a
         Bradley-Terry model.
-    lengthscale : float, optional (default: 1.0)
-        The lengthscale parameter.
+    lengthscale : float or np.array, optional (default: 1.0)
+        The lengthscale parameter. Can either be a scalar or vector of size D
+        where D is the number of dimensions of the input space.
     """
 
     def __init__(self, n_iter=500, n_samples=1, sigma_signal=1.0,
