@@ -52,7 +52,7 @@ def compute_grid(bounds, n_gridpoints, dtype=np.float32):
     """
     # compute the exact number of grid points
     n_dim = len(bounds)
-    n_gridpoints_exact = np.round(np.power(n_gridpoints, 1.0 / n_dim))
+    n_gridpoints_exact = int(np.round(np.power(n_gridpoints, 1.0 / n_dim)))
 
     # compute gridpoints
     ticks = [np.linspace(*x, num=n_gridpoints_exact) for x in bounds]
