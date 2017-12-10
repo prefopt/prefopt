@@ -34,7 +34,7 @@ def compute_probit(z):
 
 
 def compute_logit(z):
-    return 1 / (1 + tf.exp(-z))
+    return tf.sigmoid(z)
 
 
 def encode_observations(y):
