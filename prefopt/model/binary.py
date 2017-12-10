@@ -41,6 +41,28 @@ def encode_observations(y):
     return np.array([(1 if x == 1 else 0) for x in y.values()])
 
 
+def define_ard_lengthscale(D, gamma=None, low=0.1, high=3.0):
+    lscale_low = np.array([low] * D, dtype=np.float32)
+    lscale_high = np.array([high] * D, dtype=np.float32)
+    if gamma is None:
+        gamma = Normal(loc=tf.zeros(D), scale=tf.ones(D))
+        lengthscale = ((lscale_high - lscale_low) * tf.sigmoid(gamma) +
+                       lscale_low)
+        return gamma, lengthscale
+    else:
+        lengthscale = ((lscale_high - lscale_low) * tf.sigmoid(gamma) +
+                       lscale_low)
+        return None, lengthscale.eval()
+
+
+def define_ard_variational_distribution(D):
+    qgamma = Normal(
+        loc=tf.Variable(tf.random_normal([D])),
+        scale=tf.nn.softplus(tf.Variable(tf.random_normal([D])))
+    )
+    return qgamma
+
+
 def define_prior(N, D, sigma_noise, sigma_signal, lengthscale):
     """
     Define a Gaussian process prior.
@@ -55,7 +77,7 @@ def define_prior(N, D, sigma_noise, sigma_signal, lengthscale):
         The noise variance.
     sigma_signal : float
         The signal variance.
-    lengthscale : float or np.array
+    lengthscale : float or array-like
         The lengthscale parameter. Can either be a scalar or vector of size D
         where D is the number of dimensions of the input space.
 
@@ -146,7 +168,7 @@ def define_posterior_predictive(X, K, f, sigma_signal, sigma_noise,
         The mean function.
     var : tf.Tensor, shape (None,)
         The variance function.
-    lengthscale : float or np.array
+    lengthscale : float or array-like
         The lengthscale parameter. Can either be a scalar or vector of size D
         where D is the number of dimensions of the input space.
     """
@@ -193,15 +215,19 @@ class BinaryPreferenceModel(PreferenceModel):
     lengthscale : float or np.array, optional (default: 1.0)
         The lengthscale parameter. Can either be a scalar or vector of size D
         where D is the number of dimensions of the input space.
+    ard : bool, optional (default: False)
+        Use automatic relevance determination (ARD) instead of fixed
+        lengthscales. If True, the value of lengthscale will be ignored.
     """
 
     def __init__(self, n_iter=500, n_samples=1, sigma_signal=1.0,
-                 sigma_noise=1.0, link='probit', lengthscale=1.0):
-        self.lengthscale = lengthscale
+                 sigma_noise=1.0, link='logit', lengthscale=1.0, ard=False):
         self.n_iter = n_iter
         self.n_samples = n_samples
-        self.sigma_noise = sigma_noise
         self.sigma_signal = sigma_signal
+        self.sigma_noise = sigma_noise
+        self.lengthscale = lengthscale
+        self.ard = ard
 
         if link == 'probit':
             self.compute_link = compute_probit
@@ -235,6 +261,15 @@ class BinaryPreferenceModel(PreferenceModel):
         # preprocess data
         d = encode_observations(self.y)
 
+        # instantiate dict with variational_distributions
+        variational_distributions = {}
+
+        # define ard lengthscales and variational distribution
+        if self.ard:
+            gamma, self.lengthscale = define_ard_lengthscale(D)
+            qgamma = define_ard_variational_distribution(D)
+            variational_distributions[gamma] = qgamma
+
         # define prior
         self.X_, K, f = define_prior(
             N,
@@ -252,15 +287,24 @@ class BinaryPreferenceModel(PreferenceModel):
             self.compute_link
         )
 
-        # define variational distribution
+        # define variational distribution for prior
         qf = define_variational_distribution(N)
+        variational_distributions[f] = qf
 
         # perform inference
-        inference = KLqp({f: qf}, data={self.X_: self.X, d_: d})
+        inference = KLqp(
+            variational_distributions,
+            data={self.X_: self.X, d_: d}
+        )
         inference.run(n_iter=self.n_iter, n_samples=self.n_samples)
 
         # define posterior predictive mean and variance
         qf_mean = qf.mean().eval()
+
+        if self.ard:
+            qgamma_mean = qgamma.mean().eval()
+            _, self.lengthscale = define_ard_lengthscale(D, gamma=qgamma_mean)
+
         self.x_, self.mu, self.var = define_posterior_predictive(
             self.X_,
             K,

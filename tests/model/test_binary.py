@@ -18,6 +18,7 @@ from prefopt.model.binary import (
     compute_latent,
     compute_logit,
     compute_probit,
+    define_ard_lengthscale,
     define_likelihood,
     define_posterior_predictive,
     define_prior,
@@ -77,6 +78,10 @@ def compute_posterior_predictive(X, x, f, sigma_signal, sigma_noise,
     return mu, var
 
 
+def compute_lengthscales(x, low, high):
+    return (high - low) * (1 / (1 + np.exp(-x))) + low
+
+
 class TestHelperFunctions(tf.test.TestCase):
 
     def test_compute_latent(self):
@@ -133,6 +138,60 @@ class TestHelperFunctions(tf.test.TestCase):
         d = encode_observations(y)
         e = np.array([1, 1, 0])
         self.assertAllEqual(d, e)
+
+    def test_define_ard_lengthscale_1d(self):
+        with self.test_session():
+            D = 1
+            low = 0.5
+            high = 6.2
+
+            gamma_, lengthscale = define_ard_lengthscale(D, low=low, high=high)
+            self.assertAllClose(
+                gamma_.mean().eval(),
+                np.zeros(D)
+            )
+            self.assertAllClose(
+                gamma_.variance().eval(),
+                np.ones(D)
+            )
+
+            gamma = np.zeros(D)
+            lengthscale_true = compute_lengthscales(
+                gamma,
+                np.array([low] * D),
+                np.array([high] * D)
+            )
+            self.assertAllClose(
+                lengthscale.eval(feed_dict={gamma_: gamma}),
+                lengthscale_true
+            )
+
+    def test_define_ard_lengthscale_2d(self):
+        with self.test_session():
+            D = 2
+            low = 0.5
+            high = 4.1
+
+            gamma_, lengthscale = define_ard_lengthscale(D, low=low, high=high)
+            self.assertAllClose(
+                gamma_.mean().eval(),
+                np.zeros(D)
+            )
+            self.assertAllClose(
+                gamma_.variance().eval(),
+                np.ones(D)
+            )
+
+            gamma = np.zeros(D)
+            lengthscale_true = compute_lengthscales(
+                gamma,
+                np.array([low] * D),
+                np.array([high] * D)
+            )
+            self.assertAllClose(
+                lengthscale.eval(feed_dict={gamma_: gamma}),
+                lengthscale_true
+            )
 
     def test_define_prior_scalar_lengthscale(self):
         with self.test_session():
@@ -435,6 +494,96 @@ class TestHelperFunctions(tf.test.TestCase):
                 X_: X,
                 K_: K,
                 f_: f,
+            }
+
+            # single query point
+            x = np.array([[0.5, 2]])
+
+            mu_true, var_true = compute_posterior_predictive(
+                X,
+                x=x,
+                f=f,
+                sigma_signal=sigma_signal,
+                sigma_noise=sigma_noise,
+                lengthscale=lengthscale
+            )
+
+            feed_dict = {x_: x}
+            feed_dict.update(base_dict)
+
+            self.assertAllClose(
+                var.eval(feed_dict=feed_dict),
+                var_true
+            )
+            self.assertAllClose(
+                mu.eval(feed_dict=feed_dict),
+                mu_true
+            )
+
+            # multiple query points
+            x = np.array([
+                [0, 1.5],
+                [9.2, -3],
+                [17, 2]
+            ])
+
+            mu_true, var_true = compute_posterior_predictive(
+                X,
+                x=x,
+                f=f,
+                sigma_signal=sigma_signal,
+                sigma_noise=sigma_noise,
+                lengthscale=lengthscale
+            )
+
+            feed_dict = {x_: x}
+            feed_dict.update(base_dict)
+
+            self.assertAllClose(
+                var.eval(feed_dict=feed_dict),
+                var_true
+            )
+            self.assertAllClose(
+                mu.eval(feed_dict=feed_dict),
+                mu_true
+            )
+
+    def test_define_posterior_predictive_2d_ard_lengthscale(self):
+        with self.test_session():
+            N, D = 3, 2
+            sigma_signal = 3.3
+            sigma_noise = 1.5
+            lengthscale_ = tf.placeholder(tf.float32, [D])
+
+            lengthscale = np.array([0.2, 4.1])
+
+            X_ = tf.placeholder(tf.float32, [N, D])
+            K_ = tf.placeholder(tf.float32, [N, N])
+            f_ = tf.placeholder(tf.float32, [N])
+
+            X = np.arange(N * D).reshape(N, D)
+            K = compute_rbf(
+                    X,
+                    sigma_signal=sigma_signal,
+                    sigma_noise=sigma_noise,
+                    lengthscale=lengthscale
+                )
+            f = np.zeros(N)
+
+            x_, mu, var = define_posterior_predictive(
+                X_,
+                K_,
+                f_,
+                sigma_signal,
+                sigma_noise,
+                lengthscale_
+            )
+
+            base_dict = {
+                X_: X,
+                K_: K,
+                f_: f,
+                lengthscale_: lengthscale
             }
 
             # single query point
