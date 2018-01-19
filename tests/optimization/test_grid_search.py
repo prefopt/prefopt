@@ -23,7 +23,8 @@ class TestHelperFunctions(unittest.TestCase):
         n_gridpoints_exact = np.sqrt(len(grid))
         ticks = [np.linspace(*x, num=n_gridpoints_exact) for x in bounds]
         true_grid = np.array(
-            zip(*[x.flatten() for x in np.meshgrid(*ticks, indexing='ij')]),
+            list(zip(*[x.flatten()
+                       for x in np.meshgrid(*ticks, indexing='ij')])),
             dtype=dtype
         )
         self.assertEqual(true_grid.shape, grid.shape)
