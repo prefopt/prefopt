@@ -9,8 +9,7 @@ before_install:
     - sudo apt-get -qq update
     - sudo apt-get install gfortran -y
 install:
-    - pip install -r requirements.txt
-    - python setup.py install
+    - pip install .[lint,test]
 # command to run tests
 script:
     - python setup.py lint

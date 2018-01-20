@@ -1,34 +1,73 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
+import os
+import shlex
 import subprocess
+import sys
 
 from distutils.cmd import Command
 from setuptools import setup, find_packages
+from setuptools.command.test import test as TestCommand
 
 
-class BenchmarkCommand(Command):
-    """Custom command to run optimization benchmarks."""
+BASE_DIR = os.path.dirname(__file__)
+SRC_DIR = os.path.join(BASE_DIR, 'src')
+PREFOPT_DIR = os.path.join(SRC_DIR, 'prefopt')
+TEST_DIR = os.path.join(BASE_DIR, 'tests')
 
-    description = 'run prefopt on sigopt.evalset evaluation benchmark.'
-    user_options = []
+ABOUT = {}
+with open(os.path.join(SRC_DIR, 'prefopt', '__about__.py')) as f:
+    exec(f.read(), ABOUT)
 
-    def initialize_options(self):
-        pass
 
-    def finalize_options(self):
-        pass
+PACKAGES = find_packages(where='src')
 
-    def run(self):
-        # NOTE `setup` needs to execute before `benchmarks` can be imported
-        import benchmarks.sigopt_evalset
-        benchmarks.sigopt_evalset.run()
+CLASSIFIERS = [
+    'Development Status :: 3 - Alpha',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Education',
+    'Intended Audience :: Science/Research',
+    'License :: OSI Approved :: MIT License',
+    'Programming Language :: Python :: 2.7',
+    'Programming Language :: Python :: 3.4',
+    'Programming Language :: Python :: 3.5',
+    'Programming Language :: Python :: 3.6',
+]
+
+INSTALL_REQUIRES = [
+    'edward',
+    'numpy',
+    'scipy',
+    'scipydirect',
+    'tensorflow',
+]
+TESTS_REQUIRE = [
+    'coverage',
+    'pytest',
+]
+LINT_REQUIRES = [
+    'pylint',
+    'pycodestyle',
+    'pydocstyle',
+]
+EXTRAS_REQUIRE = {
+    'lint': LINT_REQUIRES,
+    'test': TESTS_REQUIRE,
+}
+DEPENDENCY_LINKS = [
+    'https://github.com/sigopt/evalset/tarball/master#egg=evalset',
+]
 
 
 class LintCommand(Command):
-    """Custom command to run flake8 linter."""
+    """Custom command to run linter."""
 
-    description = 'run linter.'
+    description = 'run linter'
     user_options = []
 
     def initialize_options(self):
@@ -38,68 +77,68 @@ class LintCommand(Command):
         pass
 
     def run(self):
-        cmd = [
-            'flake8',
-            'benchmarks',
-            'examples',
-            'prefopt',
-            'setup.py',
-            'tests',
+        targets = [
+            PREFOPT_DIR,
+            TEST_DIR,
+            'setup.py'
         ]
-        subprocess.call(
-            cmd,
-            stderr=subprocess.STDOUT,
-        )
+        linters = [
+            'pylint',
+            'pycodestyle',
+            'pydocstyle',
+        ]
+
+        return_values = []
+        for linter in linters:
+            errno = subprocess.call(
+                [linter] + targets,
+                stderr=subprocess.STDOUT,
+            )
+            return_values.append(errno)
+
+        sys.exit(any(return_values))
+
+
+class PyTestCommand(TestCommand):
+
+    user_options = [('pytest-args=', 'a', "Arguments to pass to pytest")]
+
+    def initialize_options(self):
+        TestCommand.initialize_options(self)
+        self.pytest_args = ''
+
+    def run_tests(self):
+        import pytest
+        errno = pytest.main(shlex.split(self.pytest_args))
+        sys.exit(errno)
+
+
+CMDCLASS = {
+    'lint': LintCommand,
+    'test': PyTestCommand,
+}
 
 
 setup(
-    # basic setup
-    name='prefopt',
-    version='0.0.1',
-    packages=find_packages(exclude=[
-        'examples',
-        'docs',
-        'tests',
-    ]),
+    name=ABOUT['__title__'],
+    version=ABOUT['__version__'],
 
-    # dependencies
-    install_requires=[
-        'edward>=1.3.3',
-        'evalset>=1.2.1',
-        'flake8>=3.4.1',
-    ],
+    description=ABOUT['__summary__'],
+    license=ABOUT['__license__'],
+    url=ABOUT['__uri__'],
 
-    # dependency links
-    dependency_links=[
-        'https://github.com/sigopt/evalset/tarball/master#egg=evalset-1.2.1',
-    ],
+    author=ABOUT['__author__'],
+    author_email=ABOUT['__email__'],
 
-    # testing
-    test_suite='tests',
+    classifiers=CLASSIFIERS,
 
-    # additional commands
-    cmdclass={
-        'benchmark': BenchmarkCommand,
-        'lint': LintCommand,
-    },
+    package_dir={"": "src"},
+    packages=PACKAGES,
 
-    # PyPI metadata
-    author='Ian Dewancker, Jakob Bauer, Michael McCourt',
-    author_email='prefopt-dev@googlegroups.com',
-    url='https://github.com/prefopt/prefopt',
-    license='MIT',
+    install_requires=INSTALL_REQUIRES,
+    tests_require=TESTS_REQUIRE,
+    extras_require=EXTRAS_REQUIRE,
 
-    classifiers=[
-        # how mature is this project? common values are
-        #   3 - Alpha
-        #   4 - Beta
-        #   5 - Production/Stable
-        'Development Status :: 3 - Alpha',
-        'Intended Audience :: Developers',
-        'Intended Audience :: Education',
-        'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: MIT License',
-        # supported Python versions
-        'Programming Language :: Python :: 2.7',
-    ]
+    dependency_links=DEPENDENCY_LINKS,
+    cmdclass=CMDCLASS,
 )
