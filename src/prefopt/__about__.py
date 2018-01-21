@@ -17,7 +17,7 @@ __all__ = [
 __title__ = 'prefopt'
 __version__ = '0.0.1.dev0'
 
-__summary__ = 'package for preference-based optimization'
+__summary__ = 'Preference-based optimization'
 __uri__ = 'https://github.com/prefopt/prefopt'
 
 __author__ = 'Ian Dewancker, Jakob Bauer, Michael McCourt'
