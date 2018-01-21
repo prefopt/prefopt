@@ -1,6 +1,7 @@
 .coverage
 .coverage*
 .eggs/
+.pypirc
 .tox/
 build/
 dist/
