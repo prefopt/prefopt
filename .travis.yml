@@ -6,9 +6,9 @@ language: python
 cache: pip
 
 matrix:
-  fast_finish: true
+    fast_finish: true
 
-  include:
+include:
     - python: '2.7'
       env: TOXENV=py27
     - python: '3.4'
@@ -20,13 +20,13 @@ matrix:
     - python: '3.6-dev'
       env: TOXENV=py36
 
-  allow_failures:
+allow_failures:
     python: '3.6-dev'
 
 before_install:
     - sudo apt-get -qq update
     - sudo apt-get install gfortran -y
-      - pip install codecov
+    - pip install codecov
 
 install:
     - pip install tox
@@ -35,8 +35,8 @@ script:
     - tox
 
 after_success:
-  - tox -e coverage-report
-  - codecov
+    - tox -e coverage-report
+    - codecov
 
 notifications:
-  email: false
+    email: false
