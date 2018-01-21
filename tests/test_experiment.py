@@ -134,6 +134,7 @@ class TestPreferenceExperiment(unittest.TestCase):
             acquirer._valuations
         )
 
+    @unittest.skip('long-running')
     def test_run(self):
         # set RNG seed
         np.random.seed(0)

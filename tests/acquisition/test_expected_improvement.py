@@ -30,6 +30,7 @@ CONFIG = {
 }
 
 
+@unittest.skip('long-running')
 class TestExpectedImprovementAcquirerDirectOptimizer(tf.test.TestCase):
 
     def test_interface_with_direct_optimizer_scalar_lengthscale(self):
