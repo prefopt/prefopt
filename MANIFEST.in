@@ -1,0 +1,15 @@
+include .coveragerc
+include .pydocstylerc
+include .pylintrc
+include LICENSE.txt
+include README.md
+include tox.ini
+
+recursive-include tests *.py
+
+exclude .travis.yml
+exclude benchmarks
+exclude examples
+
+recursive-exclude benchmarks *.py
+recursive-exclude examples *.py
