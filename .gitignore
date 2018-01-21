@@ -1,4 +1,6 @@
+.coverage
 .eggs/
+.tox/
 build/
 dist/
 prefopt.egg-info/

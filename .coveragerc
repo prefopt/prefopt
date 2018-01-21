@@ -1,0 +1,13 @@
+[run]
+branch = True
+source =
+    prefopt
+
+[paths]
+source =
+   src/prefopt
+   .tox/*/lib/python*/site-packages/prefopt
+   .tox/pypy/site-packages/prefopt
+
+[report]
+show_missing = True
