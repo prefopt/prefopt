@@ -3,7 +3,7 @@ group: travis_latest
 sudo: false
 
 language: python
-cache: cache: pip
+cache: pip
 
 matrix:
   fast_finish: true
