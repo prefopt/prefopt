@@ -161,9 +161,9 @@ class TestExpectedImprovementAcquirerDirectOptimizer(tf.test.TestCase):
                 acquirer.valuations
 
             # test `next`
-            a1, a2 = a
-            b1, b2 = b
-            xn = xn1, xn2 = acquirer.next
+            a1, _ = a
+            b1, _ = b
+            xn = xn1, _ = acquirer.next
             eps = 0.5
             self.assertTrue(
                 (a1 - eps < xn1 < b1)
@@ -194,8 +194,8 @@ class TestExpectedImprovementAcquirerDirectOptimizer(tf.test.TestCase):
             acquirer.update(e, b, 1)
 
             # test `next`
-            l1, l2 = (x[0] for x in bounds)
-            xn1, xn2 = acquirer.next
+            l1, _ = (x[0] for x in bounds)
+            xn1, _ = acquirer.next
             self.assertTrue((l1 < xn1 < a1))
 
             # test `best`
@@ -263,9 +263,9 @@ class TestExpectedImprovementAcquirerDirectOptimizer(tf.test.TestCase):
                 acquirer.valuations
 
             # test `next`
-            a1, a2 = a
-            b1, b2 = b
-            xn = xn1, xn2 = acquirer.next
+            a1, _ = a
+            b1, _ = b
+            xn = xn1, _ = acquirer.next
             eps = 1.0
             self.assertTrue(
                 (a1 - eps < xn1 < b1),
@@ -296,8 +296,8 @@ class TestExpectedImprovementAcquirerDirectOptimizer(tf.test.TestCase):
             acquirer.update(e, bc, 1)
 
             # test `next`
-            l1, l2 = (x[0] for x in bounds)
-            xn1, xn2 = acquirer.next
+            l1, _ = (x[0] for x in bounds)
+            xn1, _ = acquirer.next
             self.assertTrue(
                 (l1 <= xn1 < a1),
             )
@@ -449,9 +449,9 @@ class TestExpectedImprovementAcquirerGridSearch(tf.test.TestCase):
                 acquirer.valuations
 
             # test `next`
-            a1, a2 = a
-            b1, b2 = b
-            xn = xn1, xn2 = acquirer.next
+            a1, _ = a
+            b1, _ = b
+            xn = xn1, _ = acquirer.next
             eps = 0.5
             self.assertTrue(
                 (a1 - eps < xn1 < b1)
@@ -482,8 +482,8 @@ class TestExpectedImprovementAcquirerGridSearch(tf.test.TestCase):
             acquirer.update(e, b, 1)
 
             # test `next`
-            l1, l2 = (x[0] for x in bounds)
-            xn1, xn2 = acquirer.next
+            l1, _ = (x[0] for x in bounds)
+            xn1, _ = acquirer.next
             self.assertTrue((l1 < xn1 < a1))
 
             # test `best`
@@ -551,9 +551,9 @@ class TestExpectedImprovementAcquirerGridSearch(tf.test.TestCase):
                 acquirer.valuations
 
             # test `next`
-            a1, a2 = a
-            b1, b2 = b
-            xn = xn1, xn2 = acquirer.next
+            a1, _ = a
+            b1, _ = b
+            xn = xn1, _ = acquirer.next
             eps = 1.0
             self.assertTrue(
                 (a1 - eps < xn1 < b1),
@@ -584,8 +584,8 @@ class TestExpectedImprovementAcquirerGridSearch(tf.test.TestCase):
             acquirer.update(e, bc, 1)
 
             # test `next`
-            l1, l2 = (x[0] for x in bounds)
-            xn1, xn2 = acquirer.next
+            l1, _ = (x[0] for x in bounds)
+            xn1, _ = acquirer.next
             self.assertTrue(
                 (l1 <= xn1 < a1),
             )

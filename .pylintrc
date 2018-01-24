@@ -81,7 +81,6 @@ disable=
     too-many-locals,
     too-many-statements,
     trailing-comma-tuple,
-    unused-variable,
     wildcard-import,
     wrong-import-order,
 

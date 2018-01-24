@@ -172,7 +172,7 @@ def define_posterior_predictive(X, K, f, sigma_signal, sigma_noise,
         The lengthscale parameter. Can either be a scalar or vector of size D
         where D is the number of dimensions of the input space.
     """
-    N, D = X.shape
+    _, D = X.shape
     x = tf.placeholder(tf.float32, [None, D])
     k = rbf(X, x, variance=sigma_signal, lengthscale=lengthscale)
     K_inv = tf.matrix_inverse(K)
