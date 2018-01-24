@@ -6,11 +6,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from prefopt.acquisition import Optimizer
-
 import itertools
 
 import numpy as np
+
+from prefopt.acquisition import Optimizer
 
 __all__ = ['GridSearchOptimizer']
 
