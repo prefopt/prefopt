@@ -318,6 +318,7 @@ class TestExpectedImprovementAcquirerDirectOptimizer(tf.test.TestCase):
             self.assertTrue(s1 < s2)
 
 
+@unittest.skip('long-running')
 class TestExpectedImprovementAcquirerGridSearch(tf.test.TestCase):
 
     def test_interface_with_grid_search_optimizer_scalar_lengthscale(self):
