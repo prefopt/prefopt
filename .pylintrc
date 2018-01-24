@@ -61,7 +61,6 @@ disable=
     attribute-defined-outside-init,
     bad-continuation,
     duplicate-code,
-    exec-used,
     fixme,
     import-error,
     invalid-name,

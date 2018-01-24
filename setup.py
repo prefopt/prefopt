@@ -17,7 +17,7 @@ TEST_DIR = os.path.join(BASE_DIR, 'tests')
 
 ABOUT = {}
 with open(os.path.join(SRC_DIR, 'prefopt', '__about__.py')) as f:
-    exec(f.read(), ABOUT)
+    exec(f.read(), ABOUT)  # pylint: disable=exec-used
 
 PACKAGES = find_packages(where='src')
 
