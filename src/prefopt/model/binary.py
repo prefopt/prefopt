@@ -49,10 +49,10 @@ def define_ard_lengthscale(D, gamma=None, low=0.1, high=3.0):
         lengthscale = ((lscale_high - lscale_low) * tf.sigmoid(gamma) +
                        lscale_low)
         return gamma, lengthscale
-    else:
-        lengthscale = ((lscale_high - lscale_low) * tf.sigmoid(gamma) +
-                       lscale_low)
-        return None, lengthscale.eval()
+
+    lengthscale = ((lscale_high - lscale_low) * tf.sigmoid(gamma) +
+                   lscale_low)
+    return None, lengthscale.eval()
 
 
 def define_ard_variational_distribution(D):
