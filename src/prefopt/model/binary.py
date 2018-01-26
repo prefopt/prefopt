@@ -19,7 +19,7 @@ from edward.util import rbf
 
 from prefopt.acquisition import PreferenceModel
 
-all = ['BinaryPreferenceModel']
+__all__ = ['BinaryPreferenceModel']
 
 
 def compute_latent(f, y, sigma):
