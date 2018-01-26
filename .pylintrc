@@ -59,7 +59,6 @@ disable=
     abstract-name,
     arguments-differ,
     attribute-defined-outside-init,
-    bad-continuation,
     duplicate-code,
     fixme,
     import-error,

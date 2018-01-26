@@ -304,11 +304,11 @@ class TestHelperFunctions(tf.test.TestCase):
 
             X = np.arange(N)[:, np.newaxis]
             K = compute_rbf(
-                    X,
-                    sigma_signal=sigma_signal,
-                    sigma_noise=sigma_noise,
-                    lengthscale=lengthscale
-                )
+                X,
+                sigma_signal=sigma_signal,
+                sigma_noise=sigma_noise,
+                lengthscale=lengthscale
+            )
             f = np.zeros(N)
 
             x_, mu, var = define_posterior_predictive(
@@ -387,11 +387,11 @@ class TestHelperFunctions(tf.test.TestCase):
 
             X = np.arange(N * D).reshape(N, D)
             K = compute_rbf(
-                    X,
-                    sigma_signal=sigma_signal,
-                    sigma_noise=sigma_noise,
-                    lengthscale=lengthscale
-                )
+                X,
+                sigma_signal=sigma_signal,
+                sigma_noise=sigma_noise,
+                lengthscale=lengthscale
+            )
             f = np.zeros(N)
 
             x_, mu, var = define_posterior_predictive(
@@ -474,11 +474,11 @@ class TestHelperFunctions(tf.test.TestCase):
 
             X = np.arange(N * D).reshape(N, D)
             K = compute_rbf(
-                    X,
-                    sigma_signal=sigma_signal,
-                    sigma_noise=sigma_noise,
-                    lengthscale=lengthscale
-                )
+                X,
+                sigma_signal=sigma_signal,
+                sigma_noise=sigma_noise,
+                lengthscale=lengthscale
+            )
             f = np.zeros(N)
 
             x_, mu, var = define_posterior_predictive(
@@ -563,11 +563,11 @@ class TestHelperFunctions(tf.test.TestCase):
 
             X = np.arange(N * D).reshape(N, D)
             K = compute_rbf(
-                    X,
-                    sigma_signal=sigma_signal,
-                    sigma_noise=sigma_noise,
-                    lengthscale=lengthscale
-                )
+                X,
+                sigma_signal=sigma_signal,
+                sigma_noise=sigma_noise,
+                lengthscale=lengthscale
+            )
             f = np.zeros(N)
 
             x_, mu, var = define_posterior_predictive(
