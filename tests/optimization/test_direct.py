@@ -28,11 +28,11 @@ class TestOptimization(unittest.TestCase):
         self.assertTrue(np.isclose(x, -9))
 
         # quadratic
-        x = optimizer.maximize(lambda x: pow(x, 2)),
+        x = optimizer.maximize(lambda x: pow(x, 2))
         self.assertTrue(np.isclose(x, 10))
 
         # quadratic
-        x = optimizer.maximize(lambda x: -pow(x, 2)),
+        x = optimizer.maximize(lambda x: -pow(x, 2))
         self.assertTrue(np.isclose(x, 0), x)
 
 
