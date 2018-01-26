@@ -11,7 +11,6 @@ import unittest
 from prefopt.data import PreferenceDict, UniformPreferenceDict
 
 
-# TODO https://bugs.python.org/file31761/transformdict3.patch
 class TestPreferenceDict(unittest.TestCase):
 
     def test_basic(self):
