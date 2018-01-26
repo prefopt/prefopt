@@ -72,7 +72,6 @@ disable=
     redefined-builtin,
     super-init-not-called,
     too-few-public-methods,
-    too-many-ancestors,
     too-many-arguments,
     too-many-instance-attributes,
     too-many-locals,
