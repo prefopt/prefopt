@@ -67,11 +67,11 @@ class TestExpectedImprovementAcquirerDirectOptimizer(tf.test.TestCase):
 
             # test that `next` needs to be called before `best`
             with self.assertRaises(ValueError):
-                acquirer.best
+                acquirer.best  # pylint: disable=pointless-statement
 
             # test that `next` needs to be called before `valuations`
             with self.assertRaises(ValueError):
-                acquirer.valuations
+                acquirer.valuations  # pylint: disable=pointless-statement
 
             # test `next`
             a1, a2 = a
@@ -154,11 +154,11 @@ class TestExpectedImprovementAcquirerDirectOptimizer(tf.test.TestCase):
 
             # test that `next` needs to be called before `best`
             with self.assertRaises(ValueError):
-                acquirer.best
+                acquirer.best  # pylint: disable=pointless-statement
 
             # test that `next` needs to be called before `valuations`
             with self.assertRaises(ValueError):
-                acquirer.valuations
+                acquirer.valuations  # pylint: disable=pointless-statement
 
             # test `next`
             a1, _ = a
@@ -256,11 +256,11 @@ class TestExpectedImprovementAcquirerDirectOptimizer(tf.test.TestCase):
 
             # test that `next` needs to be called before `best`
             with self.assertRaises(ValueError):
-                acquirer.best
+                acquirer.best  # pylint: disable=pointless-statement
 
             # test that `next` needs to be called before `valuations`
             with self.assertRaises(ValueError):
-                acquirer.valuations
+                acquirer.valuations  # pylint: disable=pointless-statement
 
             # test `next`
             a1, _ = a
@@ -355,11 +355,11 @@ class TestExpectedImprovementAcquirerGridSearch(tf.test.TestCase):
 
             # test that `next` needs to be called before `best`
             with self.assertRaises(ValueError):
-                acquirer.best
+                acquirer.best  # pylint: disable=pointless-statement
 
             # test that `next` needs to be called before `valuations`
             with self.assertRaises(ValueError):
-                acquirer.valuations
+                acquirer.valuations  # pylint: disable=pointless-statement
 
             # test `next`
             a1, a2 = a
@@ -442,11 +442,11 @@ class TestExpectedImprovementAcquirerGridSearch(tf.test.TestCase):
 
             # test that `next` needs to be called before `best`
             with self.assertRaises(ValueError):
-                acquirer.best
+                acquirer.best  # pylint: disable=pointless-statement
 
             # test that `next` needs to be called before `valuations`
             with self.assertRaises(ValueError):
-                acquirer.valuations
+                acquirer.valuations  # pylint: disable=pointless-statement
 
             # test `next`
             a1, _ = a
@@ -544,11 +544,11 @@ class TestExpectedImprovementAcquirerGridSearch(tf.test.TestCase):
 
             # test that `next` needs to be called before `best`
             with self.assertRaises(ValueError):
-                acquirer.best
+                acquirer.best  # pylint: disable=pointless-statement
 
             # test that `next` needs to be called before `valuations`
             with self.assertRaises(ValueError):
-                acquirer.valuations
+                acquirer.valuations  # pylint: disable=pointless-statement
 
             # test `next`
             a1, _ = a

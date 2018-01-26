@@ -65,7 +65,6 @@ disable=
     missing-docstring,
     no-member,
     no-self-use,
-    pointless-statement,
     protected-access,
     redefined-builtin,
     super-init-not-called,

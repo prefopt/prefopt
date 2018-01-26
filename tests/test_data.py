@@ -22,7 +22,6 @@ class TestPreferenceDict(unittest.TestCase):
 
         e, f = (9, 9), (1, 1)
         d[e, f] = -1
-        d[f, e] == 1
         self.assertEqual(d[e, f], -1)
         self.assertEqual(d[f, e], 1)
 
