@@ -3,6 +3,7 @@ include .pydocstylerc
 include .pylintrc
 include LICENSE.txt
 include README.md
+include behave.ini
 include pytest.ini
 include tox.ini
 
