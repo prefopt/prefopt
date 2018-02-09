@@ -3,8 +3,11 @@ include .pydocstylerc
 include .pylintrc
 include LICENSE.txt
 include README.md
+include pytest.ini
 include tox.ini
 
+recursive-include features *.feature
+recursive-include features *.py
 recursive-include tests *.py
 
 exclude .travis.yml

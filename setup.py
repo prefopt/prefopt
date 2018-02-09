@@ -41,6 +41,7 @@ INSTALL_REQUIRES = [
     'tensorflow',
 ]
 TESTS_REQUIRE = [
+    'behave',
     'coverage',
     'pytest',
 ]

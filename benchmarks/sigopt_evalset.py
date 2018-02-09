@@ -24,6 +24,7 @@ from prefopt.model import BinaryPreferenceModel
 from prefopt.optimization import DirectOptimizer
 
 
+# TODO is this a strategy?
 class BenchmarkInputPresenter(InputPresenter):
     """
     Presenter for benchmark test functions.

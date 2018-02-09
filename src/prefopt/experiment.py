@@ -8,6 +8,11 @@ from __future__ import print_function
 
 import abc
 
+import prefopt.acquisition
+import prefopt.data
+import prefopt.model
+import prefopt.optimization
+
 
 class InputPresenter(object):
     """
@@ -95,11 +100,14 @@ class PreferenceExperiment(object):
         The current iteration, starting from zero.
     """
 
-    def __init__(self, acquirer, input_presenter, output_presenter):
+    def __init__(self, acquirer, input_presenter, output_presenter,
+                 seed_data=None):
         self.acquirer = acquirer
         self.input_presenter = input_presenter
         self.output_presenter = output_presenter
         self.iteration = 0
+        if seed_data:
+            self.acquirer.update(*seed_data)
 
     def run(self):
         """Run one iteration of the preference experiment."""
@@ -123,3 +131,22 @@ class PreferenceExperiment(object):
         """Monitor the current valuations of the model."""
         valuations = self.acquirer.valuations
         self.output_presenter.present_valuations(valuations)
+
+
+def to_classname(name, suffix=''):
+    return ''.join([token.capitalize() for token in name.split('-')]) + suffix
+
+
+def create_acquirer(acquisition_strategy, model, optimizer, bounds):
+    data = prefopt.data.UniformPreferenceDict(len(bounds))
+    model = prefopt.model.BinaryPreferenceModel(link=model)
+
+    # pylint: disable=abstract-class-instantiated
+    optimizer_classname = to_classname(optimizer, 'Optimizer')
+    optimizer_class = getattr(prefopt.optimization, optimizer_classname)
+    optimizer = optimizer_class(bounds)
+
+    acquirer_classname = to_classname(acquisition_strategy, 'Acquirer')
+    acquirer_class = getattr(prefopt.acquisition, acquirer_classname)
+
+    return acquirer_class(data, model, optimizer)

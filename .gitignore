@@ -6,3 +6,4 @@
 build/
 dist/
 prefopt.egg-info/
+.pytest_cache/
