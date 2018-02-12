@@ -12,6 +12,7 @@ import collections
 
 __all__ = [
     'BoundingBox',
+    'NegativeAbsoluteValueUtilityFunction',
     'NegativeQuadraticUtilityFunction',
 ]
 
@@ -76,6 +77,41 @@ class UtilityFunctionMeta(object):
 
 class UtilityFunction(UtilityFunctionMeta):
     """Companion class for UtilityFunctionMeta."""
+
+
+class NegativeAbsoluteValueUtilityFunction(UtilityFunction):
+    """Negative-absolute-value utility function."""
+
+    def __init__(self, bounds):
+        self.bounds = bounds
+        self.lower, self.upper = self.bounds[0]
+
+    @property
+    def argmax(self):
+        if self.lower > 0:
+            return self.lower
+        elif self.upper < 0:
+            return self.upper
+        return 0
+
+    @property
+    def bounds(self):
+        return self._bounds
+
+    @bounds.setter
+    def bounds(self, bounds):
+        if len(bounds) > 1:
+            raise ValueError('Invalid bounds: {}'.format(bounds))
+        self._bounds = bounds
+
+    def evaluate(self, x):
+        try:
+            x, = x
+        except TypeError:
+            pass
+        if not self.lower <= x <= self.upper:
+            raise ValueError("{} outside of bounds {}".format(x, self._bounds))
+        return -abs(x)
 
 
 class NegativeQuadraticUtilityFunction(UtilityFunction):

@@ -10,7 +10,11 @@ import random
 
 import pytest
 
-from prefopt.utility import BoundingBox, NegativeQuadraticUtilityFunction
+from prefopt.utility import (
+    BoundingBox,
+    NegativeAbsoluteValueUtilityFunction,
+    NegativeQuadraticUtilityFunction
+)
 
 # pylint: disable=no-self-use
 
@@ -35,7 +39,7 @@ class GivenANegativeQuadraticUtilityFunction(object):
         with pytest.raises(ValueError):
             NegativeQuadraticUtilityFunction(bounds=bounds)
 
-    def should_return_square_inside_of_domain(self):
+    def should_return_negative_square_inside_of_domain(self):
         # given
         bounds = BoundingBox([(-2, 3)])
         x = 2.5
@@ -95,6 +99,94 @@ class GivenANegativeQuadraticUtilityFunction(object):
         # given
         bounds = BoundingBox([(2, 7)])
         utility_function = NegativeQuadraticUtilityFunction(bounds=bounds)
+
+        # when
+        argmax = utility_function.argmax
+
+        # then
+        assert argmax == 2
+
+
+class GivenANegativeAbsoluteValueUtilityFunction(object):
+
+    def should_return_correct_bounds_in_one_dimension(self):
+        # given
+        bounds = BoundingBox([(-2, 3)])
+
+        # when
+        utility_function = NegativeAbsoluteValueUtilityFunction(bounds=bounds)
+
+        # then
+        assert utility_function.bounds == bounds
+
+    def should_raise_exception_in_higher_dimensions(self):
+        # given
+        bounds = BoundingBox([(-2, 3), (3, 4)])
+
+        # when, then
+        with pytest.raises(ValueError):
+            NegativeAbsoluteValueUtilityFunction(bounds=bounds)
+
+    def should_return_negative_absolute_value_inside_of_domain(self):
+        # given
+        bounds = BoundingBox([(-2, 3)])
+        x = 2.5
+
+        # when
+        utility_function = NegativeAbsoluteValueUtilityFunction(bounds=bounds)
+
+        # then
+        assert utility_function.evaluate(x) == -abs(x)
+
+    def should_raise_exception_outside_of_domain(self):
+        # given
+        bounds = BoundingBox([(-2, 3)])
+        x = 5
+
+        # when
+        utility_function = NegativeAbsoluteValueUtilityFunction(bounds=bounds)
+
+        # then
+        with pytest.raises(ValueError):
+            utility_function.evaluate(x)
+
+    def should_return_correct_value_when_used_as_a_callable(self):
+        # given
+        bounds = BoundingBox([(-2, 3)])
+        x = 2.5
+
+        # when
+        utility_function = NegativeAbsoluteValueUtilityFunction(bounds=bounds)
+
+        # then
+        assert utility_function.evaluate(x) == utility_function(x)
+
+    def should_return_correct_argmax_on_interval_including_zero(self):
+        # given
+        bounds = BoundingBox([(-2, 3)])
+        utility_function = NegativeAbsoluteValueUtilityFunction(bounds=bounds)
+
+        # when
+        argmax = utility_function.argmax
+
+        # then
+        assert argmax == 0
+
+    def should_return_correct_argmax_on_negative_interval_excluding_zero(self):
+        # given
+        bounds = BoundingBox([(-3, -2)])
+        utility_function = NegativeAbsoluteValueUtilityFunction(bounds=bounds)
+
+        # when
+        argmax = utility_function.argmax
+
+        # then
+        assert argmax == -2
+
+    def should_return_correct_argmax_on_positive_interval_excluding_zero(self):
+        # given
+        bounds = BoundingBox([(2, 7)])
+        utility_function = NegativeAbsoluteValueUtilityFunction(bounds=bounds)
 
         # when
         argmax = utility_function.argmax
