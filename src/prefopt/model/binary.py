@@ -206,7 +206,7 @@ class BinaryPreferenceModel(PreferenceModel):
         The number of samples for calculating stochastic gradient.
     sigma_signal : float, optional (default: 1.0)
         The variance of the signal.
-    sigma_noise : float, optional (default: 1.0)
+    sigma_noise : float, optional (default: 1.5)
         The variance of the observation noise.
     link : str, optional (default: probit)
         The link function. Can either be probit in which case the model is a
@@ -221,7 +221,7 @@ class BinaryPreferenceModel(PreferenceModel):
     """
 
     def __init__(self, n_iter=500, n_samples=1, sigma_signal=1.0,
-                 sigma_noise=1.0, link='logit', lengthscale=1.0, ard=False):
+                 sigma_noise=1.5, link='logit', lengthscale=1.0, ard=False):
         self.n_iter = n_iter
         self.n_samples = n_samples
         self.sigma_signal = sigma_signal
