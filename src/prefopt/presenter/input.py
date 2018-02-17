@@ -19,8 +19,8 @@ class FunctionInputPresenter(InputPresenter):
 
     The presenter maps the latent utility function to a preference relation.
 
-    Paramters
-    ---------
+    Parameters
+    ----------
     func : function
         Utility function to be maximized.
     """

@@ -40,6 +40,7 @@ INSTALL_REQUIRES = [
     'tensorflow',
 ]
 DOCS_REQUIRE = [
+    'numpydoc',
     'sphinx',
 ]
 TESTS_REQUIRE = [

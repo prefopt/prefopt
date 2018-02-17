@@ -26,6 +26,7 @@ class PreferenceDict(collections.MutableMapping):
     key; in that case, the preference relation will be negated, i.e., -v will
     be returned.
 
+    >>> from prefopt.data import PreferenceDict
     >>> d = PreferenceDict()
     >>> a, b = (0, 1, 2), (3, 4, 5)
     >>> d[a, b] = 1
@@ -80,6 +81,7 @@ class UniformPreferenceDict(PreferenceDict):
     """
     PreferenceDict that enforces uniform key length.
 
+    >>> from prefopt.data import UniformPreferenceDict
     >>> UniformPreferenceDict("foo")
     Traceback (most recent call last):
         ...
