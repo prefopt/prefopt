@@ -8,21 +8,13 @@ from __future__ import print_function
 
 import unittest
 
-import numpy as np
-import tensorflow as tf
-
-from prefopt.acquisition import (
-    Acquirer,
-    ExpectedImprovementAcquirer
-)
+from prefopt.acquisition import Acquirer
 from prefopt.data import UniformPreferenceDict
 from prefopt.experiment import (
     InputPresenter,
     OutputPresenter,
     PreferenceExperiment
 )
-from prefopt.model import BinaryPreferenceModel
-from prefopt.optimization import DirectOptimizer
 
 
 def verify_preferences(data, presenter):
@@ -133,59 +125,6 @@ class TestPreferenceExperiment(unittest.TestCase):
             output.valuations,
             acquirer._valuations
         )
-
-    @unittest.skip('long-running')
-    def test_run(self):
-        # set RNG seed
-        np.random.seed(0)
-        tf.set_random_seed(0)
-
-        # set up
-        bounds = [
-            (-3, 6),
-            (-3, 6),
-        ]
-        optimizer = DirectOptimizer(bounds)
-        model = BinaryPreferenceModel()
-        presenter = MockInputPresenter()
-        output = MockOutputPresenter()
-
-        data = UniformPreferenceDict(2)
-        a = (0, 0)
-        b = (1, 1)
-        c = (2, 2)
-        d = (3, 3)
-        data[a, b] = presenter.get_choice(a, b)
-        data[a, c] = presenter.get_choice(a, c)
-        data[b, c] = presenter.get_choice(b, c)
-        data[b, d] = presenter.get_choice(b, d)
-        data[c, d] = presenter.get_choice(c, d)
-
-        # construct experiment
-        acquirer = ExpectedImprovementAcquirer(data, model, optimizer)
-        ex = PreferenceExperiment(
-            acquirer,
-            presenter,
-            output
-        )
-
-        # verify data
-        self.assertEqual(len(data), 5)
-        self.assertTrue(verify_preferences(data, presenter))
-
-        # run experiment
-        ex.run()
-
-        # verify data
-        self.assertEqual(len(data), 6)
-        self.assertTrue(verify_preferences(data, presenter))
-
-        # run experiment
-        ex.run()
-
-        # verify data
-        self.assertEqual(len(data), 7)
-        self.assertTrue(verify_preferences(data, presenter))
 
 
 if __name__ == '__main__':

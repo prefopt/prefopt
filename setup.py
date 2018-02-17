@@ -37,7 +37,6 @@ INSTALL_REQUIRES = [
     'edward',
     'numpy',
     'scipy',
-    'scipydirect',
     'tensorflow',
 ]
 DOCS_REQUIRE = [
