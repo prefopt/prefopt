@@ -1,19 +1,29 @@
+# General
+include LICENSE.txt
+include README.md
+
+# CI
+exclude .travis.yml
+
+# Tests
 include .coveragerc
 include .pydocstylerc
 include .pylintrc
-include LICENSE.txt
-include README.md
 include behave.ini
 include pytest.ini
 include tox.ini
-
 recursive-include features *.feature
 recursive-include features *.py
 recursive-include tests *.py
 
-exclude .travis.yml
+# Docs
+include *.yml
+recursive-include docs *.py
+recursive-include docs *.rst
+recursive-include docs Makefile
+
+# Deprecated
 exclude benchmarks
 exclude examples
-
 recursive-exclude benchmarks *.py
 recursive-exclude examples *.py

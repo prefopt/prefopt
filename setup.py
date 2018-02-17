@@ -40,6 +40,9 @@ INSTALL_REQUIRES = [
     'scipydirect',
     'tensorflow',
 ]
+DOCS_REQUIRE = [
+    'sphinx',
+]
 TESTS_REQUIRE = [
     'behave',
     'coverage',
@@ -51,6 +54,7 @@ LINT_REQUIRES = [
     'pydocstyle',
 ]
 EXTRAS_REQUIRE = {
+    'docs': DOCS_REQUIRE,
     'lint': LINT_REQUIRES,
     'tests': TESTS_REQUIRE,
 }
