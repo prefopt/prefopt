@@ -15,8 +15,8 @@ __all__ = [
 ]
 
 
-class PreferenceModelMeta(object):
-    """Preference model metaclass."""
+class PreferenceModel(object):
+    """Preference model interface."""
 
     __metaclass__ = ABCMeta
 
@@ -33,12 +33,8 @@ class PreferenceModelMeta(object):
         """The variance function evaluated at point x."""
 
 
-class PreferenceModel(PreferenceModelMeta):
-    """Companion class for PreferenceModelMeta."""
-
-
-class OptimizerMeta(object):
-    """Metaclass for acquisition function optimizer."""
+class Optimizer(object):
+    """Interface for acquisition function optimizer."""
 
     __metaclass__ = ABCMeta
 
@@ -47,13 +43,9 @@ class OptimizerMeta(object):
         """Maximize the objective function over the bounded domain."""
 
 
-class Optimizer(OptimizerMeta):
-    """Companion class for OptimizerMeta."""
-
-
-class AcquirerMeta(object):
+class Acquirer(object):
     """
-    Acquirer metaclass.
+    Acquirer.
 
     This is where all the state associated with a preference experiment lives.
     """
@@ -75,7 +67,3 @@ class AcquirerMeta(object):
     @abstractmethod
     def update(self, r, c, preference):
         """Update acquirer with new preference."""
-
-
-class Acquirer(AcquirerMeta):
-    """Companion class for AcquirerMeta."""

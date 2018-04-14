@@ -37,8 +37,8 @@ class BoundingBox(collections.Sequence):
         return tuple(random.uniform(*x) for x in self._bounds)
 
 
-class UtilityFunctionMeta(object):
-    """Utility function metaclass."""
+class UtilityFunction(object):
+    """Utility function."""
 
     __metaclass__ = abc.ABCMeta
 
@@ -73,10 +73,6 @@ class UtilityFunctionMeta(object):
 
     def __call__(self, x):
         return self.evaluate(x)
-
-
-class UtilityFunction(UtilityFunctionMeta):
-    """Companion class for UtilityFunctionMeta."""
 
 
 class NegativeAbsoluteValueUtilityFunction(UtilityFunction):
